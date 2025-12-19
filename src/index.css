@@ -1,0 +1,44 @@
+/* 1. Reset and Box Sizing */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body, #root {
+  height: 100%;
+  width: 100%;
+  /* Prevents annoying "bounce" scrolling on some mobile browsers */
+  overflow-x: hidden;
+}
+
+/* 2. Global Typography */
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica,
+    Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: #f8f9fa; /* Light gray background for the area outside the mobile view */
+  color: #212529;
+}
+
+/* 3. Mobile Viewport Container */
+/* This makes the app look like a mobile phone when viewed on a desktop */
+#root {
+  max-width: 430px; /* Standard iPhone Pro Max width */
+  margin: 0 auto;
+  background-color: #ffffff;
+  min-height: 100vh;
+  position: relative;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.05);
+}
+
+/* 4. Utility Classes */
+.text-muted-custom {
+  color: #6c757d;
+}
+
+/* Removes blue highlight on tap for mobile buttons */
+button, a {
+  -webkit-tap-highlight-color: transparent;
+}

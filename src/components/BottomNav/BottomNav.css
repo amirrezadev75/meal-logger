@@ -1,0 +1,39 @@
+/* Fixed to the bottom of the viewport for a native app feel */
+.bottom-nav-container {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: #ffffff;
+  border-top: 1px solid #e0e0e0;
+  padding: 8px 0;
+  z-index: 1050; /* Above other content */
+}
+
+.bottom-nav-row {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+}
+
+/* Centers icons and labels on mobile */
+.nav-item-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #6c757d;
+  cursor: pointer;
+  transition: color 0.2s ease;
+  flex: 1 1 0;
+}
+
+.nav-item-box.active {
+  color: #0d6efd;
+}
+
+.nav-label {
+  font-size: 12px;
+  font-weight: 500;
+  margin-top: 2px;
+}

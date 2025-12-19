@@ -1,0 +1,44 @@
+/* Mobile-first: Ensures the page occupies full screen height */
+.meal-page-layout {
+  min-height: 100vh;
+  background-color: #ffffff;
+  padding-bottom: 70px; /* Prevents nav from overlapping buttons */
+  width: 100%;
+}
+
+.page-title {
+  font-weight: 700;
+  font-size: 1.5rem;
+  margin-bottom: 3rem;
+  color: #212529;
+  text-align: center;
+}
+
+/* Custom button overrides for the wireframe style */
+.meal-select-btn {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  text-align: left;
+  padding: 14px 20px !important;
+  border: 1px solid #adb5bd !important;
+  color: #495057 !important;
+  background-color: transparent !important;
+  border-radius: 4px !important;
+  width: 100%;
+}
+
+.meal-select-btn:active {
+  background-color: #f8f9fa !important;
+}
+
+.arrow-icon {
+  color: #212529;
+}
+
+/* Controls stack width for meal selection buttons */
+.meal-stack {
+  width: 100%;
+  max-width: none; /* Remove max-width constraint */
+  padding: 0; /* Remove horizontal padding */
+}
