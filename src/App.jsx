@@ -1,14 +1,14 @@
 import { useState } from 'react'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
 import LogMealPage from './pages/LogMealPage';
+import LogMealDetailsPage from './pages/LogMealDetailsPage';
 
 function App() {
   return (
     <Router>
       <Routes>
         <Route path="/" element={<LogMealPage />} />
+        <Route path="/mealdetails" element={<LogMealDetailsPage />} />
       </Routes>
     </Router>
   )

@@ -1,7 +1,6 @@
 import React from 'react';
 import { Container, Stack, Button } from 'react-bootstrap';
 import { BsChevronRight } from 'react-icons/bs';
-import BottomNav from '../BottomNav/BottomNav';
 import './LogMeal.css';
 
 const LogMeal = () => {
