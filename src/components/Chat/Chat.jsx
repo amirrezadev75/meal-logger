@@ -3,9 +3,11 @@ import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import { BsMic, BsCamera } from 'react-icons/bs';
 import SavedFoodModal from './SavedFoodModal';
 import RecentFoodModal from './RecentFoodModal';
+import { foundry } from '../../utils/aiFoundryLibrary';
 import './Chat.css';
 
 const Chat = () => {
+
   const { mealType } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
@@ -53,8 +55,18 @@ const Chat = () => {
   const [showSavedFood, setShowSavedFood] = useState(false);
   const [showRecentFood, setShowRecentFood] = useState(false);
   const [recognition, setRecognition] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [aiMessagesHistory, setAiMessagesHistory] = useState([
+    {
+      role: "system",
+      content: `You are an AI nutritionist assistant helping users log their meals. Today's focus is on ${selectedMeal?.toLowerCase() || 'meal'} for ${formatDate(selectedDate)}. Provide helpful, accurate nutrition information and assistance with meal logging. Be conversational and supportive.`
+    }
+  ]);
   const fileInputRef = useRef(null);
   const messagesEndRef = useRef(null);
+
+  // Get API key from environment
+  const apiKey = import.meta.env.VITE_AI_FOUNDRY_API_KEY;
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -86,7 +98,7 @@ const Chat = () => {
         
         if (finalTranscript.trim()) {
           const voiceMessage = {
-            id: messages.length + 1,
+            id: Date.now(),
             type: 'user',
             content: finalTranscript.trim(),
             timestamp: new Date()
@@ -94,16 +106,8 @@ const Chat = () => {
           
           setMessages(prev => [...prev, voiceMessage]);
           
-          // Simulate bot response to voice
-          setTimeout(() => {
-            const botResponse = {
-              id: messages.length + 2,
-              type: 'bot',
-              content: `I heard you say: "${finalTranscript.trim()}". Let me help you with that!`,
-              timestamp: new Date()
-            };
-            setMessages(prev => [...prev, botResponse]);
-          }, 1000);
+          // Process voice input with AI
+          handleVoiceAI(finalTranscript.trim());
         }
       };
       
@@ -136,28 +140,119 @@ const Chat = () => {
     }
   }, [messages.length]);
 
-  const handleSendMessage = () => {
-    if (message.trim()) {
-      const newMessage = {
-        id: messages.length + 1,
-        type: 'user',
-        content: message,
+  // Handle AI response for voice input
+  const handleVoiceAI = async (transcript) => {
+    if (!apiKey || apiKey === 'df-your-api-key-here') {
+      const errorMessage = {
+        id: Date.now() + 1,
+        type: 'bot',
+        content: 'Please set your AI Foundry API key in the .env file to use voice features.',
         timestamp: new Date()
       };
+      setMessages(prev => [...prev, errorMessage]);
+      return;
+    }
+
+    setIsLoading(true);
+    
+    try {
+      // Add user message to AI history
+      const updatedHistory = [...aiMessagesHistory, { role: "user", content: transcript }];
+      setAiMessagesHistory(updatedHistory);
       
-      setMessages(prev => [...prev, newMessage]);
-      setMessage('');
-      
-      // Simulate bot response
-      setTimeout(() => {
-        const botResponse = {
-          id: messages.length + 2,
+      const aiResponse = await foundry.textToText({
+        api_token: apiKey,
+        messages: updatedHistory,
+        temperature: 0.7,
+        max_tokens: 500,
+        logging: false
+      });
+
+      if (aiResponse) {
+        const botMessage = {
+          id: Date.now() + 1,
           type: 'bot',
-          content: 'Thanks for your message! I\'m processing your request...',
+          content: aiResponse,
           timestamp: new Date()
         };
-        setMessages(prev => [...prev, botResponse]);
-      }, 1000);
+        
+        setMessages(prev => [...prev, botMessage]);
+        
+        // Add bot response to AI history
+        setAiMessagesHistory(prev => [...prev, { role: "assistant", content: aiResponse }]);
+      }
+    } catch (error) {
+      console.error('Voice AI response error:', error);
+      const errorMessage = {
+        id: Date.now() + 1,
+        type: 'bot',
+        content: 'Sorry, I had trouble processing your voice input. Please try again.',
+        timestamp: new Date()
+      };
+      setMessages(prev => [...prev, errorMessage]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSendMessage = async () => {
+    if (!message.trim() || isLoading) return;
+
+    if (!apiKey || apiKey === 'df-your-api-key-here') {
+      alert('Please set your AI Foundry API key in the .env file');
+      return;
+    }
+
+    const userMessage = {
+      id: Date.now(),
+      type: 'user',
+      content: message,
+      timestamp: new Date()
+    };
+    
+    setMessages(prev => [...prev, userMessage]);
+    
+    // Add user message to AI history
+    const updatedHistory = [...aiMessagesHistory, { role: "user", content: message }];
+    setAiMessagesHistory(updatedHistory);
+    
+    setMessage('');
+    setIsLoading(true);
+    
+    try {
+      // Use foundry library for text-to-text with message history
+      const aiResponse = await foundry.textToText({
+        api_token: apiKey,
+        messages: updatedHistory,
+        temperature: 0.7,
+        max_tokens: 500,
+        logging: true
+      });
+
+      if (aiResponse) {
+        const botMessage = {
+          id: Date.now() + 1,
+          type: 'bot',
+          content: aiResponse,
+          timestamp: new Date()
+        };
+        
+        setMessages(prev => [...prev, botMessage]);
+        
+        // Add bot response to AI history
+        setAiMessagesHistory(prev => [...prev, { role: "assistant", content: aiResponse }]);
+      }
+    } catch (error) {
+      console.error('AI response error:', error);
+      const errorMessage = {
+        id: Date.now() + 1,
+        type: 'bot',
+        content: 'Sorry, I encountered an error processing your request. Please try again.',
+        timestamp: new Date()
+      };
+      setMessages(prev => [...prev, errorMessage]);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -168,30 +263,72 @@ const Chat = () => {
     }
   };
 
-  const handleImageUpload = (e) => {
+  const handleImageUpload = async (e) => {
     const file = e.target.files[0];
-    if (file) {
-      const imageMessage = {
-        id: messages.length + 1,
-        type: 'user',
-        content: `[Image: ${file.name}]`,
-        image: URL.createObjectURL(file),
-        timestamp: new Date()
-      };
+    if (!file || isLoading) return;
+
+    if (!apiKey || apiKey === 'df-your-api-key-here') {
+      alert('Please set your AI Foundry API key in the .env file');
+      return;
+    }
+
+    const imageUrl = URL.createObjectURL(file);
+    const imageMessage = {
+      id: Date.now(),
+      type: 'user',
+      content: 'I shared an image of my food.',
+      image: imageUrl,
+      timestamp: new Date()
+    };
+    
+    setMessages(prev => [...prev, imageMessage]);
+    setIsLoading(true);
+    
+    try {
+      // Use foundry library for image-to-text analysis
+      const prompt = `Analyze this food image. Identify the food items, estimate nutritional information, and provide helpful insights about this ${selectedMeal?.toLowerCase() || 'meal'}. Be specific about ingredients and portions if possible.`;
       
-      setMessages(prev => [...prev, imageMessage]);
-      
-      // Simulate bot response to image
-      setTimeout(() => {
-        const botResponse = {
-          id: messages.length + 2,
+      const aiResponse = await foundry.imageToText({
+        api_token: apiKey,
+        prompt: prompt,
+        image: file,
+        temperature: 0.7,
+        max_tokens: 500,
+        logging: false
+      });
+
+      if (aiResponse) {
+        const botMessage = {
+          id: Date.now() + 1,
           type: 'bot',
-          content: 'I can see the image you shared! Let me analyze it for you...',
+          content: aiResponse,
           timestamp: new Date()
         };
-        setMessages(prev => [...prev, botResponse]);
-      }, 1000);
+        
+        setMessages(prev => [...prev, botMessage]);
+        
+        // Add image analysis to AI history for context
+        setAiMessagesHistory(prev => [
+          ...prev,
+          { role: "user", content: "I shared an image of my food." },
+          { role: "assistant", content: aiResponse }
+        ]);
+      }
+    } catch (error) {
+      console.error('Image analysis error:', error);
+      const errorMessage = {
+        id: Date.now() + 1,
+        type: 'bot',
+        content: 'Sorry, I had trouble analyzing the image. Please try again or describe your food in text.',
+        timestamp: new Date()
+      };
+      setMessages(prev => [...prev, errorMessage]);
+    } finally {
+      setIsLoading(false);
     }
+    
+    // Clear the file input
+    e.target.value = '';
   };
 
   const startRecording = async () => {
@@ -325,6 +462,20 @@ const Chat = () => {
               </div>
             </div>
           ))}
+          {isLoading && (
+            <div className="message bot">
+              <div className="message-bubble">
+                <div className="loading-message">
+                  <span>AI is thinking</span>
+                  <div className="loading-dots">
+                    <div className="loading-dot"></div>
+                    <div className="loading-dot"></div>
+                    <div className="loading-dot"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
           <div ref={messagesEndRef} />
         </div>
       </main>
@@ -334,11 +485,11 @@ const Chat = () => {
         <div className="search-bar">
           <input 
             type="text" 
-            placeholder={isRecording ? "🎤 Recording... Release to send" : "Type your message or hold mic to record..."}
+            placeholder={isRecording ? "🎤 Recording... Release to send" : isLoading ? "AI is thinking..." : "Type your message or hold mic to record..."}
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             onKeyPress={handleKeyPress}
-            disabled={isRecording}
+            disabled={isRecording || isLoading}
           />
           <div className="icon-group">
             <BsMic 

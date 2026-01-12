@@ -1,0 +1,96 @@
+const foundry = {
+  textToText: async function ({
+    api_token,
+    model = "hermes-2-pro-llama-3-8b",
+    server = "https://data.id.tue.nl",
+    prompt,
+    messages,
+    temperature = 0.9,
+    max_tokens = 500,
+    logging = true,
+    loadingElementSelector,
+    resultElementSelector,
+  }) {
+    if (!api_token) {
+      //Do not run the function when no API key is given
+      console.error("No API key provided.");
+      return;
+    }
+
+    if (logging) {
+      console.log("Running text-to-text function");
+    }
+
+    //Create message for request
+    if (!messages) {
+      if (!prompt) {
+        console.error("No prompt given. Empty message created.");
+        prompt = "";
+      }
+      messages = [
+        //Create a message for LocalAI
+        {
+          role: "user",
+          content: prompt,
+        },
+      ];
+    }
+
+    try {
+      //Start the loading indicator
+      if (loadingElementSelector) {
+        if (document.querySelector(loadingElementSelector)) {
+          document
+            .querySelector(loadingElementSelector)
+            .setAttribute("aria-busy", "true");
+        } else {
+          console.error("Element selected for loading indicator not found");
+        }
+      }
+      //Send messages to LocalAI
+      const response = await fetch(`${server}/v1/chat/completions`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${api_token}`,
+        },
+        body: JSON.stringify({
+          messages: messages,
+          model: model,
+          temperature: temperature,
+          max_tokens: max_tokens,
+        }),
+      });
+
+      //Wait for LocalAI response
+      const json = await response.json();
+
+      // json.content contains the generated chat response
+      let chatResponse = json.choices[0].message.content;
+      if (logging) {
+        console.log("Result:", chatResponse);
+      }
+
+      //Place result on the page
+      if (resultElementSelector) {
+        document.querySelector(resultElementSelector).innerHTML += chatResponse;
+      }
+
+      //Stop loading indicator
+      if (loadingElementSelector) {
+        if (document.querySelector(loadingElementSelector)) {
+          document
+            .querySelector(loadingElementSelector)
+            .setAttribute("aria-busy", "false");
+        } else {
+          console.error("Element selected for loading indicator not found");
+        }
+      }
+
+      //Return the AI response
+      return chatResponse;
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  },
+}
