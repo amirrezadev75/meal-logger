@@ -9,7 +9,7 @@ function App() {
     <Router>
       <Routes>
         <Route path="/" element={<LogMealPage />} />
-        <Route path="/mealdetails" element={<LogMealDetailsPage />} />
+        <Route path="/mealdetails/:mealType" element={<LogMealDetailsPage />} />
         <Route path="/chat" element={<ChatPage />} />
       </Routes>
     </Router>
