@@ -1,13 +1,53 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import { BsMic, BsCamera } from 'react-icons/bs';
 import SavedFoodModal from './SavedFoodModal';
 import RecentFoodModal from './RecentFoodModal';
 import './Chat.css';
 
 const Chat = () => {
+  const { mealType } = useParams();
+  const location = useLocation();
+  const navigate = useNavigate();
+  
+  // Get meal and date information
+  const selectedDate = location.state?.selectedDate || new Date().toISOString().split('T')[0];
+  const selectedMeal = mealType ? 
+    decodeURIComponent(mealType.replace(/-/g, ' '))
+      .split(' ')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ') 
+    : null;
+
+  // Format date for European display
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-GB', { 
+      weekday: 'long', 
+      day: 'numeric', 
+      month: 'long', 
+      year: 'numeric' 
+    });
+  };
+
+  // Validate meal type
+  const validMeals = ['breakfast', 'lunch', 'dinner', 'snack/drink'];
+  const isValidMeal = mealType && validMeals.includes(mealType.toLowerCase().replace(/-/g, '/'));
+
+  useEffect(() => {
+    if (!isValidMeal) {
+      navigate('/');
+    }
+  }, [isValidMeal, navigate]);
+
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState([
-    { id: 1, type: 'bot', content: 'Hello! I\'m here to help you with your meal planning and nutrition questions. What would you like to know?', timestamp: new Date() }
+    { 
+      id: 1, 
+      type: 'bot', 
+      content: `Hello! I'm here to help you log your ${selectedMeal?.toLowerCase() || 'meal'} for ${formatDate(selectedDate)}. Please tell me what you ate or ask any nutrition questions you have!`, 
+      timestamp: new Date() 
+    }
   ]);
   const [isRecording, setIsRecording] = useState(false);
   const [showSavedFood, setShowSavedFood] = useState(false);
@@ -243,6 +283,13 @@ const Chat = () => {
       {/* Header */}
       <header className="header">
         <h1>Chat with AI Nutritionist</h1>
+        {selectedMeal && (
+          <div className="meal-context">
+            <p className="meal-info">
+              <strong>{selectedMeal}</strong> - {formatDate(selectedDate)}
+            </p>
+          </div>
+        )}
       </header>
 
       {/* Main Content Area */}

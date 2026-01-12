@@ -34,7 +34,7 @@ const LogMeal = () => {
 
     // Encode meal type for URL
     const encodedMealType = encodeURIComponent(selectedMeal.toLowerCase().replace(/\s+/g, '-'));
-    navigate(`/mealdetails/${encodedMealType}`, {
+    navigate(`/chat/${encodedMealType}`, {
       state: {
         selectedMeal,
         selectedDate
