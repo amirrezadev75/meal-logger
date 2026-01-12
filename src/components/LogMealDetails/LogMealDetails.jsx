@@ -63,9 +63,6 @@ const LogMealDetails = () => {
         <p className="text-muted mb-4">
           <strong>{selectedMeal}</strong> - {formatDate(selectedDate)}
         </p>
-        <p className="text-muted mb-4 small">
-          Date: {formatDateShort(selectedDate)}
-        </p>
 
         {/* Top Buttons: Saved and Recent with new green borders */}
         <div className="top-toggle-container mb-5">
