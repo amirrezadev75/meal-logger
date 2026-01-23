@@ -21,49 +21,6 @@ const ExtraInformation = () => {
 
   const questions = questionsConfig.questions;
 
-  // Load DataFoundation script and get participant ID
-  // Load DataFoundation script and get participant ID
-  useEffect(() => {
-    // Check if DF is already available
-    if (window.DF && window.DF.participant) {
-      setParticipantId(window.DF.participant.id);
-      setDfLoading(false);
-      return;
-    }
-
-    // Try to load the DataFoundation script
-    const script = document.createElement('script');
-    script.src = '/api/v1/participation.js';
-    script.type = 'text/javascript';
-    
-    script.onload = () => {
-      // Wait a bit for DF to initialize
-      setTimeout(() => {
-        if (window.DF && window.DF.participant) {
-          setParticipantId(window.DF.participant.id);
-          console.log('DataFoundation participant ID found:', window.DF.participant.id);
-        } else {
-          console.log('DataFoundation script loaded but participant ID not found');
-        }
-        setDfLoading(false);
-      }, 100);
-    };
-
-    script.onerror = () => {
-      console.log('DataFoundation script not available - using development participant ID');
-      setDfLoading(false);
-    };
-
-    document.head.appendChild(script);
-
-    // Cleanup
-    return () => {
-      if (document.head.contains(script)) {
-        document.head.removeChild(script);
-      }
-    };
-  }, []);
-
   // Format date for European display
   const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -104,14 +61,25 @@ const ExtraInformation = () => {
       // Structure questions with both question and answer
       const questionsData = {};
       
-      Object.keys(answers).forEach((questionId, index) => {
-        const question = questions.find(q => q.id === questionId);
-        const questionKey = `q${index + 1}`;
-        questionsData[questionKey] = {
-          question: question?.question || questionId,
-          answer: answers[questionId]
-        };
-      });
+      if (wantsToProvideInfo === false) {
+        // User chose not to provide info, fill all questions with 'not provided'
+        questions.forEach((question, index) => {
+          const questionKey = `q${index + 1}`;
+          questionsData[questionKey] = {
+            question: question.question,
+            answer: 'not provided'
+          };
+        });
+      } else {
+        // User chose to provide info, use their answers or 'not provided' for unanswered
+        questions.forEach((question, index) => {
+          const questionKey = `q${index + 1}`;
+          questionsData[questionKey] = {
+            question: question.question,
+            answer: answers[question.id] || 'not provided'
+          };
+        });
+      }
 
       // Add additional notes if provided
       if (additionalNotes.trim()) {
