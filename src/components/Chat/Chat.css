@@ -80,6 +80,48 @@
   color: white;
 }
 
+/* Confirm Buttons */
+.confirm-buttons {
+  display: flex;
+  gap: 12px;
+  padding: 20px;
+  justify-content: center;
+  border-top: 1px solid #eee;
+  margin-top: 20px;
+}
+
+.btn {
+  padding: 12px 20px;
+  border-radius: 8px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex: 1;
+  max-width: 180px;
+}
+
+.btn-outline {
+  background: transparent;
+  border: 2px solid var(--primary-green);
+  color: var(--primary-green);
+}
+
+.btn-outline:hover {
+  background: var(--primary-green);
+  color: white;
+}
+
+.btn-primary {
+  background: var(--primary-green);
+  color: white;
+}
+
+.btn-primary:hover {
+  background: #76a070;
+  transform: translateY(-1px);
+}
+
 /* Messages Container */
 .messages-container {
   flex: 1;

@@ -56,6 +56,7 @@ const Chat = () => {
   const [showRecentFood, setShowRecentFood] = useState(false);
   const [recognition, setRecognition] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [showConfirmButtons, setShowConfirmButtons] = useState(false);
   const [aiMessagesHistory, setAiMessagesHistory] = useState([
     {
       role: "system",
@@ -180,6 +181,11 @@ const Chat = () => {
         
         // Add bot response to AI history
         setAiMessagesHistory(prev => [...prev, { role: "assistant", content: aiResponse }]);
+        
+        // Show confirm buttons only after first AI response (when we have exactly 2 messages before adding this response)
+        if (!showConfirmButtons && messages.length === 1) {
+          setShowConfirmButtons(true);
+        }
       }
     } catch (error) {
       console.error('Voice AI response error:', error);
@@ -241,6 +247,11 @@ const Chat = () => {
         
         // Add bot response to AI history
         setAiMessagesHistory(prev => [...prev, { role: "assistant", content: aiResponse }]);
+        
+        // Show confirm buttons only after first AI response (when we have exactly 2 messages before adding this response)
+        if (!showConfirmButtons && messages.length === 1) {
+          setShowConfirmButtons(true);
+        }
       }
     } catch (error) {
       console.error('AI response error:', error);
@@ -313,6 +324,11 @@ const Chat = () => {
           { role: "user", content: "I shared an image of my food." },
           { role: "assistant", content: aiResponse }
         ]);
+        
+        // Show confirm buttons only after first AI response (when we have exactly 2 messages before adding this response)
+        if (!showConfirmButtons && messages.length === 1) {
+          setShowConfirmButtons(true);
+        }
       }
     } catch (error) {
       console.error('Image analysis error:', error);
@@ -415,6 +431,38 @@ const Chat = () => {
     }, 1000);
   };
 
+  const handleConfirmLog = () => {
+    // Get the last AI message
+    const lastAiMessage = messages.filter(msg => msg.type === 'bot').pop();
+    
+    // Navigate to extra information page
+    navigate('/extra-information', { 
+      state: { 
+        selectedDate, 
+        selectedMeal,
+        conversationHistory: messages,
+        aiHistory: aiMessagesHistory,
+        lastAiMessage: lastAiMessage
+      } 
+    });
+  };
+
+  const handleConfirmLogAndSave = () => {
+    // Get the last AI message
+    const lastAiMessage = messages.filter(msg => msg.type === 'bot').pop();
+    
+    // Navigate to extra information page
+    navigate('/extra-information', { 
+      state: { 
+        selectedDate, 
+        selectedMeal,
+        conversationHistory: messages,
+        aiHistory: aiMessagesHistory,
+        lastAiMessage: lastAiMessage
+      } 
+    });
+  };
+
   return (
     <div className="mobile-container">
       {/* Header */}
@@ -474,6 +522,22 @@ const Chat = () => {
                   </div>
                 </div>
               </div>
+            </div>
+          )}
+          {showConfirmButtons && (
+            <div className="confirm-buttons">
+              <button 
+                className="btn btn-outline"
+                onClick={handleConfirmLog}
+              >
+                Confirm Log
+              </button>
+              <button 
+                className="btn btn-primary"
+                onClick={handleConfirmLogAndSave}
+              >
+                Confirm Log and Save Meal
+              </button>
             </div>
           )}
           <div ref={messagesEndRef} />

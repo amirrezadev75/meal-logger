@@ -27,7 +27,10 @@ const BottomNav = () => {
             <BsHouse size={22} />
             <span className="nav-label">Home</span>
           </Col>
-          <Col className="nav-item-box">
+          <Col 
+            className={`nav-item-box ${isActive('/journal') ? 'active' : ''}`}
+            onClick={() => handleNavigation('/journal')}
+          >
             <BsCalendar3 size={22} />
             <span className="nav-label">Journal</span>
           </Col>

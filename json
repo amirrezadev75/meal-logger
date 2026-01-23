@@ -1,0 +1,44 @@
+{
+    "2026-01-13": {
+        "breakfast": {
+            "food": "Oatmeal with banana",
+            "questions": {
+                "q1": {
+                    "question": "Did you feel full?",
+                    "answer": "Yes"
+                },
+                "q2": {
+                    "question": "Was it healthy?",
+                    "answer": "Yes, high fiber"
+                }
+            }
+        },
+        "lunch": {
+            "food": "Grilled chicken with rice",
+            "questions": {
+                "q1": {
+                    "question": "Did you enjoy the meal?",
+                    "answer": "Yes"
+                },
+                "q2": {
+                    "question": "Was it enough for energy?",
+                    "answer": "Moderate"
+                }
+            }
+        },
+        "dinner": {
+            "food": "Vegetable soup and bread",
+            "questions": {
+                "q1": {
+                    "question": "Did you eat on time?",
+                    "answer": "No"
+                },
+                "q2": {
+                    "question": "Was it filling?",
+                    "answer": "Yes"
+                }
+            }
+        }
+    }
+   
+}

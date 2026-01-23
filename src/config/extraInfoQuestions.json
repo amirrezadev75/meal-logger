@@ -1,0 +1,32 @@
+{
+  "questions": [
+    {
+      "id": "location",
+      "question": "Did you eat at home or out?",
+      "options": [
+        {
+          "label": "At Home",
+          "value": "home"
+        },
+        {
+          "label": "Out",
+          "value": "out"
+        }
+      ]
+    },
+    {
+      "id": "cooking",
+      "question": "Did you cook it yourself?",
+      "options": [
+        {
+          "label": "Yes",
+          "value": "yes"
+        },
+        {
+          "label": "No",
+          "value": "no"
+        }
+      ]
+    }
+  ]
+}
