@@ -431,9 +431,10 @@ const Chat = () => {
     }, 1000);
   };
 
-  const handleConfirmLog = () => {
+  const handleConfirmLog = async (shouldSaveFood = false) => {
     // Get the last AI message
     const lastAiMessage = messages.filter(msg => msg.type === 'bot').pop();
+    
     
     // Navigate to extra information page
     navigate('/extra-information', { 
@@ -442,23 +443,8 @@ const Chat = () => {
         selectedMeal,
         conversationHistory: messages,
         aiHistory: aiMessagesHistory,
-        lastAiMessage: lastAiMessage
-      } 
-    });
-  };
-
-  const handleConfirmLogAndSave = () => {
-    // Get the last AI message
-    const lastAiMessage = messages.filter(msg => msg.type === 'bot').pop();
-    
-    // Navigate to extra information page
-    navigate('/extra-information', { 
-      state: { 
-        selectedDate, 
-        selectedMeal,
-        conversationHistory: messages,
-        aiHistory: aiMessagesHistory,
-        lastAiMessage: lastAiMessage
+        lastAiMessage: lastAiMessage,
+        savedFood: shouldSaveFood
       } 
     });
   };
@@ -528,13 +514,13 @@ const Chat = () => {
             <div className="confirm-buttons">
               <button 
                 className="btn btn-outline"
-                onClick={handleConfirmLog}
+                onClick={() => handleConfirmLog(false)}
               >
                 Confirm Log
               </button>
               <button 
                 className="btn btn-primary"
-                onClick={handleConfirmLogAndSave}
+                onClick={() => handleConfirmLog(true)}
               >
                 Confirm Log and Save Meal
               </button>
@@ -618,12 +604,14 @@ const Chat = () => {
         show={showSavedFood}
         onHide={() => setShowSavedFood(false)}
         onFoodSelect={handleFoodSelection}
+        
       />
       
       <RecentFoodModal
         show={showRecentFood}
         onHide={() => setShowRecentFood(false)}
         onFoodSelect={handleFoodSelection}
+        mealType={mealType}
       />
     </div>
   );

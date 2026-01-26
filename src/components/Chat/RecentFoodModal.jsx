@@ -1,13 +1,82 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Modal, Button, Row, Col, Card, Form, InputGroup, Badge } from 'react-bootstrap';
 import { BsSearch, BsClock, BsBookmark, BsX } from 'react-icons/bs';
+import { useNavigate } from 'react-router-dom';
+import { getDataItem } from '../../utils/dataFoundationApi';
+import { useParticipant } from '../../contexts/ParticipantContext';
 import './RecentFoodModal.css';
 
-const RecentFoodModal = ({ show, onHide, onFoodSelect }) => {
+const RecentFoodModal = ({ show, onHide, onFoodSelect, mealType }) => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [recentFoods, setRecentFoods] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const { participantId } = useParticipant();
+  const navigate = useNavigate();
+
+  // Fetch recent foods from database when modal is shown or mealType changes
+  useEffect(() => {
+    if (show && participantId) {
+      fetchRecentFoods();
+    }
+  }, [show, mealType, participantId]);
+
+  const fetchRecentFoods = async () => {
+    setLoading(true);
+    try {
+      const data = await getDataItem(participantId);
+      
+      if (data) {
+        const recentFoodItems = [];
+        
+        // Filter only date keys (YYYY-MM-DD format) and skip other keys
+        const dateEntries = Object.entries(data)
+          .filter(([key]) => /^\d{4}-\d{2}-\d{2}$/.test(key))
+          .sort(([a], [b]) => new Date(b) - new Date(a)) // Sort by date descending
+          .slice(0, 5); // Take only the 5 latest dates
+        
+        // Extract food entries from the latest 5 dates
+        dateEntries.forEach(([date, dateData]) => {
+          if (dateData && typeof dateData === 'object') {
+            Object.entries(dateData).forEach(([meal, mealData]) => {
+              if (mealData && mealData.food) {
+                // If mealType is specified, filter by meal type, otherwise include all
+                if (!mealType || meal.toLowerCase() === mealType.toLowerCase()) {
+                  // Truncate food text to first 50 words
+                  const words = mealData.food.split(' ');
+                  const truncatedFood = words.length > 50 ? words.slice(0, 50).join(' ') + '...' : mealData.food;
+                  
+                  recentFoodItems.push({
+                    id: `${date}-${meal}`,
+                    name: truncatedFood,
+                    description: `From ${meal} on ${new Date(date).toLocaleDateString('en-GB')}`,
+                    fullFood: mealData.food, // Keep full text for selection
+                    date: date,
+                    mealType: meal,
+                    timestamp: new Date(date).getTime()
+                  });
+                }
+              }
+            });
+          }
+        });
+        
+        // Sort by date (most recent first) and take only 7 items
+        const sortedFoods = recentFoodItems
+          .sort((a, b) => b.timestamp - a.timestamp)
+          .slice(0, 7);
+        
+        setRecentFoods(sortedFoods);
+      }
+    } catch (error) {
+      console.error('Error fetching recent foods:', error);
+      setRecentFoods([]);
+    } finally {
+      setLoading(false);
+    }
+  };
   
-  // Mock recent food data
-  const [recentFoods] = useState([
+  // Mock recent food data (fallback if no database data)
+  const [mockFoods] = useState([
     {
       id: 1,
       name: 'Chicken Caesar Salad',
@@ -40,13 +109,21 @@ const RecentFoodModal = ({ show, onHide, onFoodSelect }) => {
     }
   ]);
 
-  const filteredFoods = recentFoods.filter(food =>
+  // Use real data if available, otherwise fall back to mock data
+  const foodsToShow = recentFoods.length > 0 ? recentFoods : mockFoods;
+
+  const filteredFoods = foodsToShow.filter(food =>
     food.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     food.description.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const handleFoodClick = (food) => {
-    onFoodSelect(food);
+    // Pass the food object with full text for selection
+    const foodForSelection = {
+      ...food,
+      name: food.fullFood || food.name // Use full food text if available
+    };
+    onFoodSelect(foodForSelection);
   };
 
   const handleSaveFood = (food, e) => {
@@ -85,48 +162,41 @@ const RecentFoodModal = ({ show, onHide, onFoodSelect }) => {
 
             {/* Main Content Area */}
             <main className="content">
-              {/* Search Bar */}
-              <div className="search-section">
-                <div className="search-bar">
-                  <input
-                    type="text"
-                    placeholder="Search recent foods..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                  />
-                  <div className="icon-group">
-                    <BsSearch size={24} color="#88b083" />
-                  </div>
-                </div>
-              </div>
 
               {/* Food List */}
               <div className="food-list">
-                {filteredFoods.map((food) => (
-                  <div 
-                    key={food.id}
-                    className="food-item-card" 
-                    onClick={() => handleFoodClick(food)}
-                  >
-                    <div className="food-item-info">
-                      <div className="food-item-header">
-                        <span className="food-id">#{food.id}</span>
-                        <h3 className="food-item-title">{food.name}</h3>
-                      </div>
-                      <p className="food-item-description">{food.description}</p>
-                    </div>
-                    <button
-                      className="save-food-btn"
-                      onClick={(e) => handleSaveFood(food, e)}
-                      title="Save to favorites"
-                    >
-                      <BsBookmark />
-                    </button>
+                {loading ? (
+                  <div className="empty-state">
+                    <BsClock size={48} className="empty-icon" />
+                    <p className="empty-title">Loading recent foods...</p>
                   </div>
-                ))}
+                ) : (
+                  filteredFoods.map((food) => (
+                    <div 
+                      key={food.id}
+                      className="food-item-card" 
+                      onClick={() => handleFoodClick(food)}
+                    >
+                      <div className="food-item-info">
+                        <div className="food-item-header">
+                          <span className="food-id">#{food.id}</span>
+                        </div>
+                        <h3 className="food-item-title">{food.name}</h3>
+                        <p className="food-item-description">{food.description}</p>
+                      </div>
+                      <button
+                        className="save-food-btn"
+                        onClick={(e) => handleSaveFood(food, e)}
+                        title="Save to favorites"
+                      >
+                        <BsBookmark />
+                      </button>
+                    </div>
+                  ))
+                )}
               </div>
 
-              {filteredFoods.length === 0 && (
+              {!loading && filteredFoods.length === 0 && (
                 <div className="empty-state">
                   <BsClock size={48} className="empty-icon" />
                   <p className="empty-title">No recent foods found</p>

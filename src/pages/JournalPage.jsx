@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getDataItem, updateDataItem } from '../utils/dataFoundationApi';
+import { useParticipant } from '../contexts/ParticipantContext';
 import './JournalPage.css';
 
 const JournalPage = () => {
   const navigate = useNavigate();
-  const [participantId, setParticipantId] = useState('4233'); // Development default
+  const { participantId, isLoading: participantLoading } = useParticipant();
   const [dfLoading, setDfLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState('');
   const [journalData, setJournalData] = useState(null);
@@ -14,43 +15,12 @@ const JournalPage = () => {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
 
-  // Load DataFoundation script and get participant ID (same as ExtraInformation)
+  // Set dfLoading to false when participant is loaded
   useEffect(() => {
-    if (window.DF && window.DF.participant) {
-      setParticipantId(window.DF.participant.id);
+    if (!participantLoading) {
       setDfLoading(false);
-      return;
     }
-
-    const script = document.createElement('script');
-    script.src = '/api/v1/participation.js';
-    script.type = 'text/javascript';
-    
-    script.onload = () => {
-      setTimeout(() => {
-        if (window.DF && window.DF.participant) {
-          setParticipantId(window.DF.participant.id);
-          console.log('DataFoundation participant ID found:', window.DF.participant.id);
-        } else {
-          console.log('DataFoundation script loaded but participant ID not found');
-        }
-        setDfLoading(false);
-      }, 100);
-    };
-
-    script.onerror = () => {
-      console.log('DataFoundation script not available - using development participant ID');
-      setDfLoading(false);
-    };
-
-    document.head.appendChild(script);
-
-    return () => {
-      if (document.head.contains(script)) {
-        document.head.removeChild(script);
-      }
-    };
-  }, []);
+  }, [participantLoading]);
 
   // Set today's date as default when component mounts
   useEffect(() => {

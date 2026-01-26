@@ -2,17 +2,18 @@ import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import './ExtraInformation.css';
 import questionsConfig from '../config/extraInfoQuestions.json';
-import { saveMealData, getDataItem, updateDataItem, createDataItem } from '../utils/dataFoundationApi';
+import { saveMealData, getDataItem, updateDataItem, createDataItem, saveFoodItem } from '../utils/dataFoundationApi';
+import { useParticipant } from '../contexts/ParticipantContext';
 
 const ExtraInformation = () => {
   const location = useLocation();
   const navigate = useNavigate();
   
-  const { selectedDate, selectedMeal, conversationHistory, aiHistory } = location.state || {};
+  const { selectedDate, selectedMeal, conversationHistory, aiHistory, savedFood } = location.state || {};
+  const { participantId, isLoading: participantLoading } = useParticipant();
 
   // State management for the flow
   const [currentStep, setCurrentStep] = useState('initial'); // 'initial', 'questions', 'details'
-  const [participantId, setParticipantId] = useState('4233'); // Development default
   const [dfLoading, setDfLoading] = useState(true);
   const [wantsToProvideInfo, setWantsToProvideInfo] = useState(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -20,6 +21,13 @@ const ExtraInformation = () => {
   const [additionalNotes, setAdditionalNotes] = useState('');
 
   const questions = questionsConfig.questions;
+
+  // Set dfLoading to false when participant is loaded
+  useEffect(() => {
+    if (!participantLoading) {
+      setDfLoading(false);
+    }
+  }, [participantLoading]);
 
   // Format date for European display
   const formatDate = (dateString) => {
@@ -57,6 +65,23 @@ const ExtraInformation = () => {
       const foodInfo = conversationHistory?.length > 0 
         ? conversationHistory[conversationHistory.length - 1]?.content || "Food logged"
         : "Food logged";
+
+      // Save to savedFoods if the flag is true
+      if (savedFood) {
+        try {
+          const savedFoodData = {
+            mealtype: selectedMeal.toLowerCase(),
+            food: foodInfo
+          };
+          
+          // Use the new saveFoodItem function
+          await saveFoodItem(savedFoodData, participantId);
+          console.log('Food saved to savedFoods successfully');
+        } catch (error) {
+          console.error('Error saving food to savedFoods:', error);
+          // Continue with meal logging even if savedFood fails
+        }
+      }
 
       // Structure questions with both question and answer
       const questionsData = {};

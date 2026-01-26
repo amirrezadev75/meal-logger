@@ -1,43 +1,78 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BsSearch, BsBookmark, BsTrash, BsX } from 'react-icons/bs';
+import { useNavigate } from 'react-router-dom';
+import { getDataItem, deleteDataItem, updateDataItem, getSavedFoods, deleteSavedFood } from '../../utils/dataFoundationApi';
+import { useParticipant } from '../../contexts/ParticipantContext';
 import './SavedFoodModal.css';
 
 const SavedFoodModal = ({ show, onHide, onFoodSelect }) => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [savedFoods, setSavedFoods] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const { participantId } = useParticipant();
+  const navigate = useNavigate();
   
-  // Mock saved food data
-  const [savedFoods] = useState([
-    {
-      id: 1,
-      name: 'Grilled Chicken Breast',
-      description: 'Lean protein source, great for muscle building and weight management.'
-    },
-    {
-      id: 2,
-      name: 'Quinoa Bowl',
-      description: 'Complete protein grain with all essential amino acids.'
-    },
-    {
-      id: 3,
-      name: 'Greek Yogurt',
-      description: 'Probiotic-rich dairy with high protein content.'
-    },
-    {
-      id: 4,
-      name: 'Avocado Toast',
-      description: 'Rich in healthy monounsaturated fats and fiber.'
-    },
-    {
-      id: 5,
-      name: 'Salmon Fillet',
-      description: 'High in omega-3 fatty acids and quality protein.'
-    },
-    {
-      id: 6,
-      name: 'Mixed Berries',
-      description: 'Antioxidant-rich fruits with natural sweetness.'
+  // Load saved foods when modal opens
+  useEffect(() => {
+    if (show) {
+      loadSavedFoods();
     }
-  ]);
+  }, [show]);
+
+  const loadSavedFoods = async () => {
+    setIsLoading(true);
+    try {
+      const savedFoodsData = await getSavedFoods(participantId);
+      console.log('Fetched saved foods data:', savedFoodsData);
+      
+      // Use the simplified data structure directly
+      let foodsArray = [];
+      
+      if (savedFoodsData && Array.isArray(savedFoodsData)) {
+        foodsArray = savedFoodsData.map((savedFoodItem, index) => {
+          const mealType = savedFoodItem.mealtype;
+          const foodInfo = savedFoodItem.food || 'Unknown food';
+          
+          // Truncate to first 6 words
+          const words = foodInfo.split(' ');
+          const truncatedText = words.length > 6 ? words.slice(0, 6).join(' ') + '...' : foodInfo;
+          
+          return {
+            id: index,
+            name: truncatedText,
+            description: foodInfo, // Full text for when selected
+            mealType: mealType,
+            savedDate: savedFoodItem.savedDate
+          };
+        });
+      }
+      
+      // Sort by most recently saved
+      foodsArray.reverse();
+      
+      setSavedFoods(foodsArray);
+    } catch (error) {
+      console.error('Error loading saved foods:', error);
+      setSavedFoods([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDeleteFood = async (foodIndex, e) => {
+    e.stopPropagation();
+    
+    try {
+      // Since we reversed the array for display, we need to convert back to actual index
+      const actualIndex = savedFoods.length - 1 - foodIndex;
+      await deleteSavedFood(actualIndex, participantId);
+      // Reload the saved foods list
+      await loadSavedFoods();
+    } catch (error) {
+      console.error('Error deleting food:', error);
+      alert('Error deleting food. Please try again.');
+    }
+  };
 
   const filteredFoods = savedFoods.filter(food =>
     food.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -84,37 +119,44 @@ const SavedFoodModal = ({ show, onHide, onFoodSelect }) => {
 
               {/* Food List */}
               <div className="food-list">
-                {filteredFoods.map((food) => (
-                  <div 
-                    key={food.id}
-                    className="food-item-card" 
-                    onClick={() => handleFoodClick(food)}
-                  >
-                    <div className="food-item-info">
-                      <div className="food-item-header">
-                        <span className="food-id">#{food.id}</span>
-                        <h3 className="food-item-title">{food.name}</h3>
-                      </div>
-                      <p className="food-item-description">{food.description}</p>
-                    </div>
-                    <button
-                      className="delete-food-btn"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        console.log('Delete food:', food.id);
-                      }}
-                    >
-                      <BsTrash />
-                    </button>
+                {isLoading ? (
+                  <div className="empty-state">
+                    <p className="empty-title">Loading saved foods...</p>
                   </div>
-                ))}
+                ) : (
+                  filteredFoods.map((food) => (
+                    <div 
+                      key={food.id}
+                      className="food-item-card" 
+                      onClick={() => handleFoodClick(food)}
+                    >
+                      <div className="food-item-info">
+                        <div className="food-item-header">
+                          <span className="food-id">#{food.mealType}</span>
+                          <h3 className="food-item-title">{food.name}</h3>
+                        </div>
+                        <p className="food-item-description">{food.description}</p>
+                      </div>
+                      <button
+                        className="delete-food-btn"
+                        onClick={(e) => handleDeleteFood(food.id, e)}
+                      >
+                        <BsTrash />
+                      </button>
+                    </div>
+                  ))
+                )}
               </div>
 
-              {filteredFoods.length === 0 && (
+              {!isLoading && filteredFoods.length === 0 && (
                 <div className="empty-state">
                   <BsBookmark size={48} className="empty-icon" />
                   <p className="empty-title">No saved foods found</p>
-                  {searchTerm && <p className="empty-subtitle">Try a different search term</p>}
+                  {searchTerm ? (
+                    <p className="empty-subtitle">Try a different search term</p>
+                  ) : (
+                    <p className="empty-subtitle">Save some meals to see them here</p>
+                  )}
                 </div>
               )}
             </main>

@@ -3,6 +3,12 @@
  * Converts jQuery $.ajax calls to modern fetch API
  */
 
+// Helper function to get current date in European format (DD/MM/YYYY)
+const getCurrentDateEuropean = () => {
+  const date = new Date();
+  return date.toLocaleDateString('en-GB');
+};
+
 // Get configuration from environment variables
 const getConfig = () => ({
   baseUrl: import.meta.env.VITE_API_URL || 'https://data.id.tue.nl/api/v1/datasets/entity/18693',
@@ -106,11 +112,116 @@ export const saveMealData = async (mealData, participantId) => {
   return createDataItem(mealData, participantId || 'unknown_participant');
 };
 
+/**
+ * Save a food item to savedFoods within participant data
+ * @param {Object} savedFoodData - Saved food data to add (format: { mealType: { food: "..." } })
+ * @param {string} participantId - Participant identifier
+ * @returns {Promise} - API response
+ */
+export const saveFoodItem = async (savedFoodData, participantId) => {
+  const resourceId = participantId || 'unknown_participant';
+  
+  try {
+    // Try to get existing participant data
+    const existingData = await getDataItem(resourceId);
+    
+    // Merge savedFood with existing data
+    const mergedData = { ...existingData };
+    
+    // Initialize savedFoods as array if it doesn't exist
+    if (!mergedData.savedFoods) {
+      mergedData.savedFoods = [];
+    }
+    
+    // Add metadata to the saved food item
+    const savedFoodEntry = {
+      ...savedFoodData,
+      savedDate: getCurrentDateEuropean()
+    };
+    
+    // Push the new saved food item to the array
+    mergedData.savedFoods.push(savedFoodEntry);
+    
+    // Update the participant data
+    return await updateDataItem(mergedData, resourceId);
+    
+  } catch (error) {
+    // Check if it's a 404 error (participant data doesn't exist)
+    if (error.message.includes('404')) {
+      // Create new participant data with savedFoods array
+      const newData = {
+        savedFoods: [{
+          ...savedFoodData,
+          savedDate: getCurrentDateEuropean()
+        }]
+      };
+      return await createDataItem(newData, resourceId);
+    } else {
+      throw error;
+    }
+  }
+};
+
+/**
+ * Get saved foods for a participant
+ * @param {string} participantId - Participant identifier
+ * @returns {Promise} - Saved foods object
+ */
+export const getSavedFoods = async (participantId) => {
+  const resourceId = participantId || 'unknown_participant';
+  
+  try {
+    const participantData = await getDataItem(resourceId);
+    return participantData?.savedFoods || {};
+  } catch (error) {
+    // If participant data doesn't exist, return empty object
+    if (error.message.includes('404')) {
+      return {};
+    }
+    throw error;
+  }
+};
+
+/**
+ * Delete a saved food item from participant data
+ * @param {number} savedFoodIndex - Index of the saved food to delete in the array
+ * @param {string} participantId - Participant identifier
+ * @returns {Promise} - API response
+ */
+export const deleteSavedFood = async (savedFoodIndex, participantId) => {
+  const resourceId = participantId || 'unknown_participant';
+  
+  try {
+    // Get existing participant data
+    const existingData = await getDataItem(resourceId);
+    
+    if (existingData?.savedFoods && Array.isArray(existingData.savedFoods)) {
+      // Remove the saved food item at the specified index
+      if (savedFoodIndex >= 0 && savedFoodIndex < existingData.savedFoods.length) {
+        existingData.savedFoods.splice(savedFoodIndex, 1);
+        
+        // Update the participant data
+        return await updateDataItem(existingData, resourceId);
+      } else {
+        throw new Error('Invalid saved food index');
+      }
+    } else {
+      throw new Error('No saved foods found');
+    }
+    
+  } catch (error) {
+    throw error;
+  }
+};
+
 // Default export with all functions
 export default {
   createDataItem,
   getDataItem,
   updateDataItem,
   deleteDataItem,
-  saveMealData
+  saveMealData,
+  saveFoodItem,
+  getSavedFoods,
+  deleteSavedFood
 };
