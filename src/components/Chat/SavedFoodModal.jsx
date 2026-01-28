@@ -5,45 +5,41 @@ import { getDataItem, deleteDataItem, updateDataItem, getSavedFoods, deleteSaved
 import { useParticipant } from '../../contexts/ParticipantContext';
 import './SavedFoodModal.css';
 
-const SavedFoodModal = ({ show, onHide, onFoodSelect }) => {
+const SavedFoodModal = ({ show, onHide, onFoodSelect, mealType }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [savedFoods, setSavedFoods] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const { participantId } = useParticipant();
   const navigate = useNavigate();
   
-  // Load saved foods when modal opens
+  // Load saved foods when modal opens or mealType changes
   useEffect(() => {
-    if (show) {
+    if (show && participantId) {
       loadSavedFoods();
     }
-  }, [show]);
+  }, [show, mealType, participantId]);
 
   const loadSavedFoods = async () => {
     setIsLoading(true);
     try {
       const savedFoodsData = await getSavedFoods(participantId);
-      console.log('Fetched saved foods data:', savedFoodsData);
+      console.log('mealType:', mealType);
       
       // Use the simplified data structure directly
       let foodsArray = [];
-      
+      console.log('Saved foods data type:', typeof savedFoodsData);
       if (savedFoodsData && Array.isArray(savedFoodsData)) {
         foodsArray = savedFoodsData.map((savedFoodItem, index) => {
-          const mealType = savedFoodItem.mealtype;
-          const foodInfo = savedFoodItem.food || 'Unknown food';
-          
-          // Truncate to first 6 words
-          const words = foodInfo.split(' ');
-          const truncatedText = words.length > 6 ? words.slice(0, 6).join(' ') + '...' : foodInfo;
-          
           return {
             id: index,
-            name: truncatedText,
-            description: foodInfo, // Full text for when selected
-            mealType: mealType,
-            savedDate: savedFoodItem.savedDate
+            name: savedFoodItem.food, // Use the raw food content
+            mealType: savedFoodItem.mealtype,
+            savedDate: savedFoodItem.savedDate,
+            originalData: savedFoodItem // Keep original for reference
           };
+        }).filter(food => {
+          // If mealType is specified, filter by meal type, otherwise include all
+          return !mealType || food.mealType.toLowerCase() === mealType.toLowerCase();
         });
       }
       
@@ -80,7 +76,11 @@ const SavedFoodModal = ({ show, onHide, onFoodSelect }) => {
   );
 
   const handleFoodClick = (food) => {
-    onFoodSelect(food);
+    // Simply pass the food object with the original food content
+    onFoodSelect({
+      name: food.name, // This is the raw food content from the database
+      mealType: food.mealType
+    });
   };
 
   return (
@@ -102,25 +102,12 @@ const SavedFoodModal = ({ show, onHide, onFoodSelect }) => {
 
             {/* Main Content Area */}
             <main className="content">
-              {/* Search Bar */}
-              <div className="search-section">
-                <div className="search-bar">
-                  <input
-                    type="text"
-                    placeholder="Search saved foods..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                  />
-                  <div className="icon-group">
-                    <BsSearch size={24} color="#88b083" />
-                  </div>
-                </div>
-              </div>
 
               {/* Food List */}
               <div className="food-list">
                 {isLoading ? (
                   <div className="empty-state">
+                    <BsBookmark size={48} className="empty-icon" />
                     <p className="empty-title">Loading saved foods...</p>
                   </div>
                 ) : (
@@ -132,10 +119,10 @@ const SavedFoodModal = ({ show, onHide, onFoodSelect }) => {
                     >
                       <div className="food-item-info">
                         <div className="food-item-header">
-                          <span className="food-id">#{food.mealType}</span>
-                          <h3 className="food-item-title">{food.name}</h3>
+                          <span className="food-id">#{food.id}</span>
                         </div>
-                        <p className="food-item-description">{food.description}</p>
+                        <h3 className="food-item-title">{food.name}</h3>
+                        <p className="food-item-description">Saved on {food.savedDate}</p>
                       </div>
                       <button
                         className="delete-food-btn"

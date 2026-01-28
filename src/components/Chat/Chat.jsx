@@ -58,6 +58,7 @@ const Chat = () => {
   const [recognition, setRecognition] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [showConfirmButtons, setShowConfirmButtons] = useState(false);
+  const [currentFoodMode, setCurrentFoodMode] = useState(null); // 'saved', 'recent', or null
   const [aiMessagesHistory, setAiMessagesHistory] = useState([
     {
       role: "system",
@@ -183,8 +184,8 @@ const Chat = () => {
         // Add bot response to AI history
         setAiMessagesHistory(prev => [...prev, { role: "assistant", content: aiResponse }]);
         
-        // Show confirm buttons only after first AI response (when we have exactly 2 messages before adding this response)
-        if (!showConfirmButtons && messages.length === 1) {
+        // Show confirm buttons after any AI response
+        if (!showConfirmButtons) {
           setShowConfirmButtons(true);
         }
       }
@@ -220,7 +221,18 @@ const Chat = () => {
     setMessages(prev => [...prev, userMessage]);
     
     // Add user message to AI history
-    const updatedHistory = [...aiMessagesHistory, { role: "user", content: message }];
+    let updatedHistory = [...aiMessagesHistory, { role: "user", content: message }];
+    
+    // If we're in a special food mode, add the appropriate context
+    if (currentFoodMode) {
+      const specialPrompt = currentFoodMode === 'saved' ? prompts.savedFoodPrompt : prompts.recentFoodPrompt;
+      updatedHistory = [
+        ...aiMessagesHistory,
+        { role: "user", content: message },
+        { role: "system", content: specialPrompt }
+      ];
+    }
+    
     setAiMessagesHistory(updatedHistory);
     
     setMessage('');
@@ -249,8 +261,8 @@ const Chat = () => {
         // Add bot response to AI history
         setAiMessagesHistory(prev => [...prev, { role: "assistant", content: aiResponse }]);
         
-        // Show confirm buttons only after first AI response (when we have exactly 2 messages before adding this response)
-        if (!showConfirmButtons && messages.length === 1) {
+        // Show confirm buttons after any AI response
+        if (!showConfirmButtons) {
           setShowConfirmButtons(true);
         }
       }
@@ -326,8 +338,8 @@ const Chat = () => {
           { role: "assistant", content: aiResponse }
         ]);
         
-        // Show confirm buttons only after first AI response (when we have exactly 2 messages before adding this response)
-        if (!showConfirmButtons && messages.length === 1) {
+        // Show confirm buttons after any AI response
+        if (!showConfirmButtons) {
           setShowConfirmButtons(true);
         }
       }
@@ -348,28 +360,6 @@ const Chat = () => {
     e.target.value = '';
   };
 
-  const startRecording = async () => {
-    if (!recognition) {
-      alert('Speech recognition is not supported in this browser. Please use Chrome, Safari, or Edge.');
-      return;
-    }
-
-    try {
-      setIsRecording(true);
-      recognition.start();
-    } catch (error) {
-      console.error('Error starting speech recognition:', error);
-      setIsRecording(false);
-      alert('Error starting speech recognition. Please try again.');
-    }
-  };
-
-  const stopRecording = () => {
-    if (recognition && isRecording) {
-      recognition.stop();
-      setIsRecording(false);
-    }
-  };
 
   const handleVoiceStart = () => {
     if (!recognition) {
@@ -408,11 +398,14 @@ const Chat = () => {
     return timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
-  const handleFoodSelection = (foodItem) => {
+  const handleFoodSelection = async (foodItem, foodType) => {
+    // Set the current food mode to continue using the special prompt
+    setCurrentFoodMode(foodType);
+
     const foodMessage = {
-      id: messages.length + 1,
+      id: Date.now(),
       type: 'user',
-      content: `Tell me about: ${foodItem.name}`,
+      content: `I want to log: ${foodItem.description || foodItem.name}`,
       timestamp: new Date()
     };
     
@@ -420,16 +413,67 @@ const Chat = () => {
     setShowSavedFood(false);
     setShowRecentFood(false);
     
-    // Simulate bot response about the food
-    setTimeout(() => {
-      const botResponse = {
-        id: messages.length + 2,
+    // Always show confirm buttons after food selection
+    setShowConfirmButtons(true);
+    
+    // If no API key, just show the message and confirm buttons
+    if (!apiKey || apiKey === 'df-your-api-key-here') {
+      return;
+    }
+    
+    setIsLoading(true);
+    
+    try {
+      // Choose the appropriate prompt based on food type
+      const specialPrompt = foodType === 'saved' ? prompts.savedFoodPrompt : prompts.recentFoodPrompt;
+      
+      // Create the message for AI with special context
+      const contextMessage = `${specialPrompt} The food item is: ${foodItem.description || foodItem.name}`;
+      
+      // Update AI history with the food selection context
+      const updatedHistory = [
+        ...aiMessagesHistory,
+        { role: "user", content: `I want to log: ${foodItem.description || foodItem.name}` },
+        { role: "system", content: contextMessage }
+      ];
+      
+      const aiResponse = await foundry.textToText({
+        api_token: apiKey,
+        messages: updatedHistory,
+        temperature: 0.7,
+        max_tokens: 500,
+        logging: false
+      });
+
+      if (aiResponse) {
+        const botMessage = {
+          id: Date.now() + 1,
+          type: 'bot',
+          content: aiResponse,
+          timestamp: new Date()
+        };
+        
+        setMessages(prev => [...prev, botMessage]);
+        
+        // Add to AI history for context
+        setAiMessagesHistory(prev => [
+          ...prev,
+          { role: "user", content: `I want to log: ${foodItem.description || foodItem.name}` },
+          { role: "assistant", content: aiResponse }
+        ]);
+      }
+    } catch (error) {
+      console.error('Food selection AI response error:', error);
+      const errorMessage = {
+        id: Date.now() + 1,
         type: 'bot',
-        content: `Here's information about ${foodItem.name}: ${foodItem.description || 'This is a nutritious food choice with great health benefits.'}`,
+        content: 'Sorry, I had trouble processing your food selection. Please try again.',
         timestamp: new Date()
       };
-      setMessages(prev => [...prev, botResponse]);
-    }, 1000);
+      setMessages(prev => [...prev, errorMessage]);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleConfirmLog = async (shouldSaveFood = false) => {
@@ -604,14 +648,14 @@ const Chat = () => {
       <SavedFoodModal
         show={showSavedFood}
         onHide={() => setShowSavedFood(false)}
-        onFoodSelect={handleFoodSelection}
-        
+        onFoodSelect={(foodItem) => handleFoodSelection(foodItem, 'saved')}
+        mealType={mealType}
       />
       
       <RecentFoodModal
         show={showRecentFood}
         onHide={() => setShowRecentFood(false)}
-        onFoodSelect={handleFoodSelection}
+        onFoodSelect={(foodItem) => handleFoodSelection(foodItem, 'recent')}
         mealType={mealType}
       />
     </div>
