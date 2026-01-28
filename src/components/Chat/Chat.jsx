@@ -4,6 +4,7 @@ import { BsMic, BsCamera } from 'react-icons/bs';
 import SavedFoodModal from './SavedFoodModal';
 import RecentFoodModal from './RecentFoodModal';
 import { foundry } from '../../utils/aiFoundryLibrary';
+import prompts from '../../config/prompts.json';
 import './Chat.css';
 
 const Chat = () => {
@@ -60,7 +61,7 @@ const Chat = () => {
   const [aiMessagesHistory, setAiMessagesHistory] = useState([
     {
       role: "system",
-      content: `You are an AI nutritionist assistant helping users log their meals. Today's focus is on ${selectedMeal?.toLowerCase() || 'meal'} for ${formatDate(selectedDate)}. Provide helpful, accurate nutrition information and assistance with meal logging. Be conversational and supportive.`
+      content: prompts.systemMessage
     }
   ]);
   const fileInputRef = useRef(null);
@@ -205,7 +206,7 @@ const Chat = () => {
     if (!message.trim() || isLoading) return;
 
     if (!apiKey || apiKey === 'df-your-api-key-here') {
-      alert('Please set your AI Foundry API key in the .env file');
+      alert(prompts.errors.apiKeyMissing);
       return;
     }
 
@@ -279,7 +280,7 @@ const Chat = () => {
     if (!file || isLoading) return;
 
     if (!apiKey || apiKey === 'df-your-api-key-here') {
-      alert('Please set your AI Foundry API key in the .env file');
+      alert(prompts.errors.apiKeyMissing);
       return;
     }
 
@@ -297,7 +298,7 @@ const Chat = () => {
     
     try {
       // Use foundry library for image-to-text analysis
-      const prompt = `Analyze this food image. Identify the food items, estimate nutritional information, and provide helpful insights about this ${selectedMeal?.toLowerCase() || 'meal'}. Be specific about ingredients and portions if possible.`;
+      const prompt = prompts.imageAnalysisPrompt;
       
       const aiResponse = await foundry.imageToText({
         api_token: apiKey,
