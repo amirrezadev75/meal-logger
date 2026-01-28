@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Container, Stack, Button, Form, Alert } from 'react-bootstrap';
-import { BsChevronRight } from 'react-icons/bs';
 import './LogMeal.css';
 
 const LogMeal = () => {
@@ -9,7 +8,7 @@ const LogMeal = () => {
   const [selectedMeal, setSelectedMeal] = useState('');
   const [selectedDate, setSelectedDate] = useState('');
   const [showError, setShowError] = useState(false);
-  const mealOptions = ["Breakfast", "Lunch", "Dinner", "Snack/Drink"];
+  const mealOptions = ["Breakfast", "Lunch", "Dinner", "Snacks / Drinks"];
 
   const handleMealSelect = (mealType) => {
     setSelectedMeal(mealType);
@@ -79,8 +78,8 @@ const LogMeal = () => {
                 onClick={() => handleMealSelect(item)}
                 variant="outline-secondary"
               >
-                <span>{item}</span>
-                <BsChevronRight className="arrow-icon" size={20} />
+                <span className="meal-label">{item}</span>
+                <span className="meal-icon">+</span>
               </Button>
             ))}
           </Stack>

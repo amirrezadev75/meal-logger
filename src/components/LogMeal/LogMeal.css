@@ -14,39 +14,39 @@
   text-align: center;
 }
 
-/* Custom button overrides for the wireframe style */
+/* Custom button overrides for the new green styling */
 .meal-select-btn {
   display: flex !important;
   justify-content: space-between !important;
   align-items: center !important;
   text-align: left;
   padding: 14px 20px !important;
-  border: 1px solid #adb5bd !important;
-  color: #495057 !important;
-  background-color: transparent !important;
-  border-radius: 4px !important;
-  width: 100%;
+  border: 2.5px solid #a3c1ad !important;
+  color: #4a4a4a !important;
+  background-color: #fff !important;
+  border-radius: 16px !important;
+  width: 70% !important;
+  max-width: none !important;
   transition: all 0.2s ease-in-out;
+  cursor: pointer;
+  outline: none;
 }
 
 /* Hover effects for meal buttons */
 .meal-select-btn:hover {
-  background-color: #f8f9fa !important;
-  border-color: #6c757d !important;
-  transform: translateY(-1px);
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  background-color: #f9fdfa !important;
+  border-color: #88af95 !important;
 }
 
 /* Selected state for meal buttons */
 .meal-select-btn.selected {
-  background-color: #e3f2fd !important;
-  border-color: #1976d2 !important;
-  color: #1976d2 !important;
+  background-color: #f9fdfa !important;
+  border-color: #88af95 !important;
+  color: #4a4a4a !important;
 }
 
 .meal-select-btn:active {
-  background-color: #f8f9fa !important;
-  transform: translateY(0);
+  transform: scale(0.98);
 }
 
 /* Date picker styling */
@@ -64,14 +64,14 @@
 
 .date-picker {
   padding: 12px 16px;
-  border-radius: 4px;
-  border: 1px solid #adb5bd;
+  border-radius: 16px;
+  border: 2.5px solid #a3c1ad;
   font-size: 1rem;
 }
 
 .date-picker:focus {
-  border-color: #1976d2;
-  box-shadow: 0 0 0 0.2rem rgba(25, 118, 210, 0.25);
+  border-color: #88af95;
+  box-shadow: 0 0 0 0.2rem rgba(163, 193, 173, 0.25);
 }
 
 /* Meal selection section */
@@ -111,13 +111,26 @@
   opacity: 0.6;
 }
 
-.arrow-icon {
-  color: #212529;
+.meal-label {
+  font-size: 16px;
+  color: #4a4a4a;
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+}
+
+.meal-icon {
+  color: #4a4a4a;
+  font-weight: 400;
+  line-height: 1;
 }
 
 /* Controls stack width for meal selection buttons */
 .meal-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 20px;
   width: 100%;
-  max-width: none; /* Remove max-width constraint */
-  padding: 0; /* Remove horizontal padding */
+  margin: 10px auto;
+  gap: 20px !important;
 }
