@@ -309,8 +309,8 @@ const Chat = () => {
     setIsLoading(true);
     
     try {
-      // Use foundry library for image-to-text analysis
-      const prompt = prompts.imageAnalysisPrompt;
+      // Use foundry library for image-to-text analysis with system prompt
+      const prompt = prompts.systemMessage;
       
       const aiResponse = await foundry.imageToText({
         api_token: apiKey,

@@ -3,6 +3,8 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import './ExtraInformation.css';
 import questionsConfig from '../config/extraInfoQuestions.json';
 import { saveMealData, getDataItem, updateDataItem, createDataItem, saveFoodItem } from '../utils/dataFoundationApi';
+import { foundry } from '../utils/aiFoundryLibrary';
+import prompts from '../config/prompts.json';
 import { useParticipant } from '../contexts/ParticipantContext';
 
 const ExtraInformation = () => {
@@ -19,6 +21,11 @@ const ExtraInformation = () => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState({});
   const [additionalNotes, setAdditionalNotes] = useState('');
+  const [nevoClassification, setNevoClassification] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Get API key from environment
+  const apiKey = import.meta.env.VITE_AI_FOUNDRY_API_KEY;
 
   const questions = questionsConfig.questions;
 
@@ -60,11 +67,45 @@ const ExtraInformation = () => {
   };
 
   const handleSaveAndFinish = async () => {
+    setIsSubmitting(true);
     try {
       // Extract food information from conversation history
       const foodInfo = conversationHistory?.length > 0 
         ? conversationHistory[conversationHistory.length - 1]?.content || "Food logged"
         : "Food logged";
+
+      // Get NEVO classification from AI if API key is available
+      let nevoGroup = null;
+      if (apiKey && apiKey !== 'df-your-api-key-here') {
+        try {
+          const classificationMessages = [
+            {
+              role: "system",
+              content: prompts.summarizationPrompt
+            },
+            {
+              role: "user",
+              content: `Please classify this food and provide a summary in JSON format: ${foodInfo}`
+            }
+          ];
+
+          const classificationResponse = await foundry.textToText({
+            api_token: apiKey,
+            messages: classificationMessages,
+            temperature: 0.3,
+            max_tokens: 300,
+            logging: false
+          });
+
+          if (classificationResponse) {
+            console.log('NEVO Classification Response:', classificationResponse);
+            nevoGroup = classificationResponse;
+          }
+        } catch (error) {
+          console.error('Error getting NEVO classification:', error);
+          // Continue without classification if API call fails
+        }
+      }
 
       // Save to savedFoods if the flag is true
       if (savedFood) {
@@ -119,7 +160,8 @@ const ExtraInformation = () => {
         [selectedDate]: {
           [selectedMeal.toLowerCase()]: {
             food: foodInfo,
-            questions: questionsData
+            questions: questionsData,
+            nevoGroup: nevoGroup
           }
         }
       };
@@ -140,7 +182,8 @@ const ExtraInformation = () => {
             ...mergedData[selectedDate],
             [selectedMeal.toLowerCase()]: {
               food: foodInfo,
-              questions: questionsData
+              questions: questionsData,
+              nevoGroup: nevoGroup
             }
           };
         } else {
@@ -148,7 +191,8 @@ const ExtraInformation = () => {
           mergedData[selectedDate] = {
             [selectedMeal.toLowerCase()]: {
               food: foodInfo,
-              questions: questionsData
+              questions: questionsData,
+              nevoGroup: nevoGroup
             }
           };
         }
@@ -175,6 +219,8 @@ const ExtraInformation = () => {
       console.error('Error saving meal data:', error);
       // You might want to show an error message to the user
       alert('Failed to save meal data. Please try again.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -195,6 +241,14 @@ const ExtraInformation = () => {
 
       {/* Main Content */}
       <main className="content">
+        {isSubmitting && (
+          <div className="loading-overlay">
+            <div className="loading-spinner">
+              <div className="spinner"></div>
+              <p>Saving your meal data...</p>
+            </div>
+          </div>
+        )}
         <div className="extra-info-container">
           {currentStep === 'initial' && (
             <div className="question-section">
@@ -268,9 +322,9 @@ const ExtraInformation = () => {
           <button 
             className="btn btn-primary"
             onClick={handleSaveAndFinish}
-            disabled={dfLoading}
+            disabled={dfLoading || isSubmitting}
           >
-            {dfLoading ? 'Loading...' : 'Confirm Log'}
+            {isSubmitting ? 'Saving...' : dfLoading ? 'Loading...' : 'Confirm Log'}
           </button>
         )}
         {currentStep === 'details' && (
@@ -284,9 +338,9 @@ const ExtraInformation = () => {
             <button 
               className="btn btn-primary"
               onClick={handleSaveAndFinish}
-              disabled={dfLoading}
+              disabled={dfLoading || isSubmitting}
             >
-              {dfLoading ? 'Loading...' : 'Confirm Log'}
+              {isSubmitting ? 'Saving...' : dfLoading ? 'Loading...' : 'Confirm Log'}
             </button>
           </>
         )}
