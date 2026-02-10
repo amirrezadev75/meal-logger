@@ -74,45 +74,8 @@ const RecentFoodModal = ({ show, onHide, onFoodSelect, mealType }) => {
       setLoading(false);
     }
   };
-  
-  // Mock recent food data (fallback if no database data)
-  const [mockFoods] = useState([
-    {
-      id: 1,
-      name: 'Chicken Caesar Salad',
-      description: 'Fresh romaine lettuce with grilled chicken, parmesan, and caesar dressing.'
-    },
-    {
-      id: 2,
-      name: 'Oatmeal with Blueberries',
-      description: 'Steel-cut oats topped with fresh blueberries and a drizzle of honey.'
-    },
-    {
-      id: 3,
-      name: 'Turkey Sandwich',
-      description: 'Whole grain bread with sliced turkey, lettuce, tomato, and mustard.'
-    },
-    {
-      id: 4,
-      name: 'Green Smoothie',
-      description: 'Spinach, banana, protein powder, almond milk, and chia seeds.'
-    },
-    {
-      id: 5,
-      name: 'Grilled Salmon',
-      description: 'Atlantic salmon grilled with herbs and served with steamed vegetables.'
-    },
-    {
-      id: 6,
-      name: 'Protein Bar',
-      description: 'Chocolate peanut butter protein bar with natural ingredients.'
-    }
-  ]);
 
-  // Use real data if available, otherwise fall back to mock data
-  const foodsToShow = recentFoods.length > 0 ? recentFoods : mockFoods;
-
-  const filteredFoods = foodsToShow.filter(food =>
+  const filteredFoods = recentFoods.filter(food =>
     food.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     food.description.toLowerCase().includes(searchTerm.toLowerCase())
   );
