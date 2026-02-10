@@ -28,7 +28,7 @@ This is a mobile-first web application that helps users log their meals with the
 
 1. **Clone the repository**
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/amirrezadev75/meal-logger.git
    ```
 
 2. **Install dependencies**
