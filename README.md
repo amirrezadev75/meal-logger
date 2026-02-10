@@ -23,14 +23,12 @@ This is a mobile-first web application that helps users log their meals with the
 
 - Node.js (v16 or higher)
 - npm or yarn
-- AI Foundry API key
 
 ### Installation
 
 1. **Clone the repository**
    ```bash
    git clone <repository-url>
-   cd meal-logger
    ```
 
 2. **Install dependencies**
@@ -43,17 +41,15 @@ This is a mobile-first web application that helps users log their meals with the
    ```env
    VITE_AI_FOUNDRY_API_KEY=your-ai-foundry-api-key-here
    VITE_DATASET_API_KEY=your-dataset-api-key-here
-   VITE_DB_ID=19158
+   VITE_DB_ID=your_entity_dataset_id
    VITE_DATABASE_BASE_URL=https://data.id.tue.nl/api/v1/datasets/entity/
    ```
 
-4. **Start development server**
+4. **Start development server and open the it in browser**
    ```bash
    npm run dev
    ```
 
-5. **Open in browser**
-   Navigate to `http://localhost:5173`
 
 ## 📊 Data Foundry Study Setup
 
@@ -63,7 +59,7 @@ Follow these steps to deploy your meal logging application and collect research 
 
 #### Step 1: Create Project in Data Foundry
 1. **Login to Data Foundry**
-   - Go to [https://data.id.tue.nl](https://data.id.tue.nl)
+   - Go to [https://data.id.tue.nl]
    - Sign in with your TU/e credentials
 
 2. **Create New Project**
@@ -74,23 +70,28 @@ Follow these steps to deploy your meal logging application and collect research 
 #### Step 2: Set Up Databases
 
 You need to create **two different databases** for your project:
+![Screenshot](images/datasets.png)
 
 ##### Database 1: Existing Dataset (for hosting your app)
 1. **Add Existing Dataset**
    - In your project, add a new database
    - Select "Existing Dataset" type
    - This will host your built application files
+     ![Screenshot](images/existing-dataset.png)
 
 2. **Configure Web Access**
    - After creating the database, go to "Web Access" settings
    - **Activate web access** - this generates a public URL
    - **Save the URL** - this is where users will access your application
 
+    ![Screenshot](images/web-access-existing-db.png)
+
 ##### Database 2: Entity Dataset (for data collection)
 1. **Add Entity Dataset**
    - Add another database to your project
    - Select "Entity Dataset" type
    - This will store your meal logging data
+   ![Screenshot](images/entity-dataset.png)
 
 2. **Configure HTTP Data Upload**
    - Go to database configuration
@@ -111,8 +112,6 @@ VITE_DB_ID=your-entity-dataset-id-here
 VITE_DATABASE_BASE_URL=https://data.id.tue.nl/api/v1/datasets/entity/
 ```
 
-**Final API endpoint will be constructed as:**  
-`https://data.id.tue.nl/api/v1/datasets/entity/{DB_ID}/{DATASET_API_KEY}`
 
 **How to get the API key:**
 1. Go to your project in Data Foundry
@@ -153,12 +152,17 @@ VITE_DATABASE_BASE_URL=https://data.id.tue.nl/api/v1/datasets/entity/
    - Select "One Person" option
    - Fill in participant details
    - The participant will be added to the participant field
+   ![Screenshot](images/participants.png)
 
 3. **Generate Unique Participant Links**
    - Click on the participant in the participant list
    - You will see a unique shareable link for that participant
    - **Share this link** with the specific participant
    - Each participant gets their own unique URL for the study duration
+
+   
+   ![Screenshot](images/participant-link.png)
+   
 
 4. **Managing Your Study**
    - **Participant tracking**: Each participant has their own unique access link
@@ -171,7 +175,6 @@ VITE_DATABASE_BASE_URL=https://data.id.tue.nl/api/v1/datasets/entity/
 
 - **Build order matters**: Configure your `.env` file BEFORE building the project
 - **Final deployment**: Upload the `dist` folder contents as the very last step
-- **Data security**: All data is stored securely in TU/e's Data Foundry infrastructure
 - **Web access**: The generated URL allows participants to access your study from any device
 
 ## 🏗️ Build Process
@@ -188,17 +191,7 @@ npm run build
 ```
 Creates an optimized production build in the `dist` folder.
 
-### Preview Production Build
-```bash
-npm run preview
-```
-Serves the production build locally for testing.
 
-### Linting
-```bash
-npm run lint
-```
-Runs ESLint to check code quality.
 
 ## 🤖 AI Configuration & Prompts
 
@@ -217,12 +210,8 @@ All AI prompts are located in: `src/config/prompts.json`
 - **Used for**: Final food classification before data saving
 - **Output**: JSON structure with food names and NEVO groups
 
-#### 3. Saved Food Prompt (`savedFoodPrompt`)
-- **Purpose**: Context for when user selects from saved foods
-- **Behavior**: Asks about portions and preparation methods
-
 #### 4. Recent Food Prompt (`recentFoodPrompt`)
-- **Purpose**: Context for when user selects from recent foods
+- **Purpose**: Context for when user selects from recent foods or saved foods
 - **Behavior**: References previous consumption patterns
 
 ### How to Modify Prompts
@@ -243,74 +232,25 @@ All AI prompts are located in: `src/config/prompts.json`
 3. **Restart the development server**
    Changes to JSON files require a restart to take effect.
 
+### Modifying Configuration Files
+
+You can change prompts and extra questions from the **config folder**:
+
+- **Prompts**: `src/config/prompts.json`
+- **Extra Questions**: `src/config/extraInfoQuestions.json`
+
+For extra questions, keep the JSON structure while adding new data:
 
 
-## 📁 Project Structure
+After making changes:
+1. **Build the application**: `npm run build`
+2. **Put the dist folder files in your project existing database in Data Foundry**
+3. Upload all files from `dist/` to replace existing files
 
-```
-meal-logger/
-├── public/                 # Static assets
-├── src/
-│   ├── components/        # React components
-│   │   ├── BottomNav/    # Bottom navigation
-│   │   └── Chat/         # Chat interface & modals
-│   ├── config/           # Configuration files
-│   │   ├── prompts.json  # AI prompts configuration
-│   │   └── extraInfoQuestions.json  # Meal context questions
-│   ├── contexts/         # React contexts
-│   │   └── ParticipantContext.jsx  # Participant management
-│   ├── pages/            # Page components
-│   │   ├── ChatPage.jsx
-│   │   ├── ExtraInformation.jsx
-│   │   └── JournalPage.jsx
-│   ├── utils/            # Utility functions
-│   │   ├── aiFoundryLibrary.js     # AI Foundry integration
-│   │   ├── apiDb.js                # Database utilities
-│   │   └── dataFoundationApi.js    # Data API functions
-│   ├── App.jsx           # Main app component
-│   └── main.jsx          # Entry point
-├── .env                  # Environment variables
-├── package.json          # Dependencies and scripts
-├── vite.config.js        # Vite configuration
-└── README.md
-```
+**Important**: Always rebuild and redeploy after configuration changes!
 
-## 🔧 Environment Variables
 
-### Required Variables
 
-- `VITE_AI_FOUNDRY_API_KEY`: API key for AI Foundry services (food identification, chat functionality)
-- `VITE_DATASET_API_KEY`: API key for accessing the meal logging dataset
-- `VITE_DB_ID`: Database identifier for the meal logging dataset (e.g., 19158)
-- `VITE_DATABASE_BASE_URL`: Base URL for TU/e Data Foundry API (ends with `/entity/`)
-
-**Note**: The final API endpoint is constructed as: `${VITE_DATABASE_BASE_URL}${VITE_DB_ID}/${VITE_DATASET_API_KEY}`  
-Example: `https://data.id.tue.nl/api/v1/datasets/entity/19158/your-api-key`
-
-### Getting API Keys from TU/e Data Foundry
-
-1. Visit [TU/e Data Foundry](https://data.id.tue.nl)
-2. Create an account or sign in with TU/e credentials
-3. Navigate to API key management in your dashboard
-4. Generate keys for:
-   - AI Foundry services (`VITE_AI_FOUNDRY_API_KEY`)
-   - Dataset access (`VITE_DATASET_API_KEY`)
-5. Add both keys to your `.env` file
-
-### Environment File Example
-
-```env
-# AI Foundry Configuration (get from TU/e Data Foundry)
-VITE_AI_FOUNDRY_API_KEY=your-ai-foundry-api-key-here
-VITE_DATASET_API_KEY=your-dataset-api-key-here
-
-# Database Configuration (get from Data Foundry Entity Dataset)
-VITE_DB_ID=19158
-VITE_DATABASE_BASE_URL=https://data.id.tue.nl/api/v1/datasets/entity/
-
-# Note: All Vite environment variables must be prefixed with VITE_
-# Final API URL will be: https://data.id.tue.nl/api/v1/datasets/entity/19158/your-dataset-api-key
-```
 
 ## 🎯 Usage Flow
 
@@ -321,102 +261,43 @@ VITE_DATABASE_BASE_URL=https://data.id.tue.nl/api/v1/datasets/entity/
 5. **Extra Information**: Optionally answer contextual questions
 6. **Data Saving**: Food is classified and saved with NEVO groups
 
-## 🔄 Data Flow
 
-1. User input → AI processing → Food identification
-2. Food classification → NEVO group assignment
-3. Optional context questions → Data compilation
-4. Final save → Database storage with classification
+## 📊 Database Structure
 
-## 🛠️ Development
+### Data Organization
 
-### Key Dependencies
+Each participant gets a **unique ID number** for easy data analysis per person. The database structure allows you to easily analyze data per participant.
 
-- **React 18**: UI framework
-- **React Router**: Navigation
-- **Vite**: Build tool and dev server
-- **React Icons**: Icon components
-
-### API Integration
-
-- **AI Foundry**: Text-to-text and image-to-text AI processing
-- **Data Foundation API**: Data storage and retrieval
-- **Speech Recognition**: Browser-native voice input
-
-### Browser Compatibility
-
-- **Voice Recognition**: Chrome, Safari, Edge
-- **Image Capture**: Modern browsers with camera access
-- **General Usage**: All modern browsers
-
-## 🎨 Styling
-
-- CSS custom properties for theming
-- Mobile-first responsive design
-- Component-scoped CSS files
-- Primary color: `#88b083` (green)
-
-## 📝 Adding New Features
-
-### Adding New Prompts
-
-1. Add to `src/config/prompts.json`
-2. Import in components that need it
-3. Use in AI function calls
-
-### Adding New Questions
-
-1. Edit `src/config/extraInfoQuestions.json`
-2. Follow existing format with id, question, and options
-
-### Modifying AI Behavior
-
-1. Update relevant prompts in `prompts.json`
-2. Adjust temperature/max_tokens in API calls
-3. Test with various food inputs
-
-## 🐛 Troubleshooting
-
-### Common Issues
-
-1. **"Please set your AI Foundry API key" or Database errors**
-   - Check `.env` file exists in project root
-   - Verify all required environment variables are set:
-     - `VITE_AI_FOUNDRY_API_KEY`
-     - `VITE_DATASET_API_KEY`
-     - `VITE_DB_ID`
-     - `VITE_DATABASE_BASE_URL`
-   - Restart dev server after adding/changing env variables
-
-2. **Voice recognition not working**
-   - Use Chrome, Safari, or Edge browser
-   - Allow microphone permissions
-   - Check for HTTPS in production
-
-3. **Image upload issues**
-   - Verify camera permissions
-   - Check file size limits
-   - Ensure proper image formats
-
-### Debug Mode
-
-Set logging to `true` in AI function calls to see detailed API responses:
-
-```javascript
-const aiResponse = await foundry.textToText({
-  // ... other options
-  logging: true  // Enable debug logging
-});
+**Example data structure:**
+```
+4255 (9)                           // Participant ID
+├── 2026-02-10           // Timestamp
+├── savedFoods: (Array)           // Saved foods for quick logging
+│   ├── 0: (Object)
+│   │   ├── mealtype: dinner
+│   │   ├── food: Chicken and potatoes.
+│   │   └── savedDate: 10/02/2026
+│   └── 1: (Object)
+│       ├── mealtype: lunch
+│       ├── food: meet
+│       └── savedDate: 10/02/2026
+├── 2026-02-09: (Object)          // Date entries
+│   └── dinner: (Object)          // Meal type
+│       ├── food: "Chicken and potatoes. 
+│       ├── questions: (Object)   // Extra information responses
+│       └── nevoGroup: { "food_name": "Chicken and potatoes", "food_group": "Meat and poultry", "summary": "..." }
+└── 2026-02-10: (Object)          // Another date
+    ├── breakfast: (Object)
+    │   ├── food: "I detected one food in your input: 
+    │   ├── questions: (Object)
+    │   └── nevoGroup: { "food_group": "Cheese", "summary": "You had cheese as a meal." }
+    └── lunch: (Object)
+        ├── food: "I understood that you ate meat..."
+        ├── questions: (Object)
+        └── nevoGroup: { "food_name": "Meat", "food_group": "Meat and poultry", "preparation": "Not specified" }
 ```
 
-## 📄 License
 
-[Add your license information here]
 
-## 🤝 Contributing
 
-[Add contributing guidelines here]
 
-## 📞 Support
-
-[Add support contact information here]
