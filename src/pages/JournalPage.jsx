@@ -77,7 +77,7 @@ const JournalPage = () => {
     }));
   };
 
-  const handleEditQuestion = (mealType, questionKey, field, value) => {
+  const handleEditAnswer = (mealType, questionKey, value) => {
     setEditedData(prev => ({
       ...prev,
       [mealType]: {
@@ -86,7 +86,7 @@ const JournalPage = () => {
           ...prev[mealType].questions,
           [questionKey]: {
             ...prev[mealType].questions[questionKey],
-            [field]: value
+            answer: value
           }
         }
       }
@@ -208,16 +208,8 @@ const JournalPage = () => {
                   {Object.entries(mealData.questions).map(([questionKey, questionData]) => (
                     <div key={questionKey} className="question-item">
                       <div className="question-text">
-                        <strong>Q:</strong> 
-                        {editMode ? (
-                          <input
-                            type="text"
-                            value={editedData[mealType]?.questions[questionKey]?.question || ''}
-                            onChange={(e) => handleEditQuestion(mealType, questionKey, 'question', e.target.value)}
-                          />
-                        ) : (
-                          <span> {questionData.question}</span>
-                        )}
+                        <strong>Q:</strong>
+                        <span> {questionData.question}</span>
                       </div>
                       <div className="answer-text">
                         <strong>A:</strong>
@@ -225,7 +217,7 @@ const JournalPage = () => {
                           <input
                             type="text"
                             value={editedData[mealType]?.questions[questionKey]?.answer || ''}
-                            onChange={(e) => handleEditQuestion(mealType, questionKey, 'answer', e.target.value)}
+                            onChange={(e) => handleEditAnswer(mealType, questionKey, e.target.value)}
                           />
                         ) : (
                           <span> {questionData.answer}</span>
