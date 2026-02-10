@@ -1,14 +1,10 @@
-/* Fixed to the bottom of the viewport for a native app feel */
+/* Natural flow navigation - no absolute positioning needed */
 .bottom-nav-container {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
   background-color: #ffffff;
   border-top: 1px solid #e0e0e0;
   padding: 8px 0;
-  z-index: 1050; /* Above other content */
   box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+  margin-top: auto; /* Pushes to bottom in flex container */
 }
 
 .bottom-nav-row {

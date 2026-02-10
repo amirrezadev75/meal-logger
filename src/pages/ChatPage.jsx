@@ -9,15 +9,11 @@ const ChatPage = () => {
       width: '100%', 
       height: '100vh', 
       display: 'flex', 
-      flexDirection: 'column',
-      position: 'relative'
+      flexDirection: 'column'
     }}>
       <div style={{ 
-        flex: 1, 
-        overflow: 'hidden',
-        display: 'flex',
-        flexDirection: 'column',
-        paddingBottom: '80px' // Add space for bottom nav
+        flex: 1,
+        overflow: 'hidden'
       }}>
         <Chat />
       </div>

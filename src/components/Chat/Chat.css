@@ -222,6 +222,27 @@
   margin-left: -5px;
 }
 
+/* iPhone SE and smaller screens */
+@media (max-width: 375px) {
+  .icon-group {
+    margin-left: -30px;
+    width: 100px;
+  }
+  
+  
+  .input-icon:hover {
+    transform: scale(1);
+  }
+  
+  .search-bar input {
+    font-size: 0.9rem;
+  }
+  
+  .search-bar input::placeholder {
+    font-size: 0.60rem;
+  }
+}
+
 .input-icon {
   cursor: pointer;
   transition: all 0.2s ease;

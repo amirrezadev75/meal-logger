@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { getDataItem, updateDataItem } from '../utils/dataFoundationApi';
 import { useParticipant } from '../contexts/ParticipantContext';
 import './JournalPage.css';
+import BottomNav from '../components/BottomNav/BottomNav';
 
 const JournalPage = () => {
   const navigate = useNavigate();
@@ -254,6 +255,7 @@ const JournalPage = () => {
         </div>
       )}
     </div>
+    
   );
 };
 
