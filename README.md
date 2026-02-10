@@ -133,10 +133,6 @@ VITE_DATABASE_BASE_URL=https://data.id.tue.nl/api/v1/datasets/entity/
    - Upload all files from the `dist/` folder
    - Make sure to upload the entire contents of the dist folder
 
-3. **Test the deployment**
-   - Use the web access URL from Step 2 to access your application
-   - Verify that the application loads correctly
-   - Test meal logging functionality to ensure data is being saved
 
 #### Step 5: Study Management
 
