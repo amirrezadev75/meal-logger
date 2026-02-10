@@ -8,7 +8,7 @@ const LogMeal = () => {
   const [selectedMeal, setSelectedMeal] = useState('');
   const [selectedDate, setSelectedDate] = useState('');
   const [showError, setShowError] = useState(false);
-  const mealOptions = ["Breakfast", "Lunch", "Dinner", "Snacks / Drinks"];
+  const mealOptions = ["Breakfast", "Lunch", "Dinner", "Snacks"];
 
   const handleMealSelect = (mealType) => {
     setSelectedMeal(mealType);

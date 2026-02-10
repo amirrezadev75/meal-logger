@@ -218,8 +218,8 @@
 
 .icon-group {
   display: flex;
-  gap: 15px;
   color: #555;
+  margin-left: -5px;
 }
 
 .input-icon {

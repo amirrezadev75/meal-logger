@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
-import { BsMic, BsCamera } from 'react-icons/bs';
+import { BsMic, BsCamera  } from 'react-icons/bs';
+import { RiSendPlaneLine } from "react-icons/ri";
 import SavedFoodModal from './SavedFoodModal';
 import RecentFoodModal from './RecentFoodModal';
 import { foundry } from '../../utils/aiFoundryLibrary';
@@ -34,7 +35,7 @@ const Chat = () => {
   };
 
   // Validate meal type
-  const validMeals = ['breakfast', 'lunch', 'dinner', 'snack/drink'];
+  const validMeals = ['breakfast', 'lunch', 'dinner', 'snacks'];
   const isValidMeal = mealType && validMeals.includes(mealType.toLowerCase().replace(/-/g, '/'));
 
   useEffect(() => {
@@ -631,6 +632,26 @@ const Chat = () => {
                 borderRadius: '50%',
                 transition: 'all 0.2s ease'
               }}
+            />
+            <RiSendPlaneLine  
+              size={26} 
+              className="input-icon send-icon"
+              onClick={handleSendMessage}
+              style={{
+                padding: '10px',
+                width: '44px',
+                height: '44px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: isLoading || !message.trim() ? 'not-allowed' : 'pointer',
+                borderRadius: '50%',
+                transition: 'all 0.2s ease',
+                backgroundColor: message.trim() ? '#007bff' : '#e0e0e0',
+                color: message.trim() ? 'white' : '#999',
+                opacity: isLoading ? 0.5 : 1
+              }}
+              disabled={isLoading || !message.trim()}
             />
           </div>
         </div>

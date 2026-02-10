@@ -11,11 +11,12 @@ const getCurrentDateEuropean = () => {
 
 // Get configuration from environment variables
 const getConfig = () => ({
-  baseUrl: import.meta.env.VITE_API_URL || 'https://data.id.tue.nl/api/v1/datasets/entity/18693',
-  apiToken: import.meta.env.VITE_API_TOKEN || 'UGF4bUZFNDUzZFZiaUZ2VjZyTUtLK240ZEtVSzlwRmZBVktXOXoxSS9hOD0=',
+  baseUrl: `${import.meta.env.VITE_DATABASE_BASE_URL}${import.meta.env.VITE_DB_ID}`,
+  apiToken: import.meta.env.VITE_DATASET_API_KEY,
   defaultToken: '1'
 });
 
+console.log("DataFoundation API configuration:", getConfig());
 /**
  * Base function to make API requests
  * @param {string} method - HTTP method (GET, POST, PUT, DELETE)
