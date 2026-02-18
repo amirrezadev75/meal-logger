@@ -50,7 +50,7 @@ const Chat = () => {
     { 
       id: 1, 
       type: 'bot', 
-      content: `Hello! I'm here to help you log your ${selectedMeal?.toLowerCase() || 'meal'} for ${formatDate(selectedDate)}. Please tell me what you ate or ask any nutrition questions you have!`, 
+      content: `Hello! You're logging your ${selectedMeal || 'meal'} for ${formatDate(selectedDate)}. Add what you ate using text, voice, or a photo.`, 
       timestamp: new Date() 
     }
   ]);
