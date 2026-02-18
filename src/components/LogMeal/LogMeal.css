@@ -42,9 +42,9 @@
 
 /* Selected state for meal buttons */
 .meal-select-btn.selected {
-  background-color: #f9fdfa !important;
-  border-color: #88af95 !important;
-  color: #4a4a4a !important;
+  background-color: #46cf66 !important;
+  border-color: #3bbd59 !important;
+  color: #ffffff !important;
 }
 
 .meal-select-btn:active {
