@@ -1,6 +1,7 @@
 /* Journal Page Styles */
 .mobile-container{
   overflow: scroll;
+  padding-bottom: 80px; /* Add space for fixed navigation */
 }
 .date-picker-section {
   padding: 20px;

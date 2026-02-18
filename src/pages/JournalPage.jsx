@@ -134,9 +134,6 @@ const JournalPage = () => {
     <div className="mobile-container">
       {/* Header */}
       <header className="header">
-        <button className="back-button" onClick={() => navigate('/')}>
-          ← Back
-        </button>
         <h1>Journal</h1>
         <p className="subtitle">View and edit your meal entries</p>
       </header>
@@ -254,6 +251,8 @@ const JournalPage = () => {
           )}
         </div>
       )}
+      
+      <BottomNav />
     </div>
     
   );
