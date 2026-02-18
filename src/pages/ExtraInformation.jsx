@@ -318,7 +318,7 @@ const ExtraInformation = () => {
             Back to Chat
           </button>
         )}
-        {currentStep === 'questions' && Object.keys(answers).length === questions.length && (
+        {currentStep === 'questions' && (
           <button 
             className="btn btn-primary"
             onClick={handleSaveAndFinish}
