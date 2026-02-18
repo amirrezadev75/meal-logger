@@ -312,14 +312,6 @@ const ExtraInformation = () => {
       <footer className="footer-buttons">
         {currentStep === 'questions' && (
           <button 
-            className="btn btn-outline"
-            onClick={handleBackToChat}
-          >
-            Back to Chat
-          </button>
-        )}
-        {currentStep === 'questions' && (
-          <button 
             className="btn btn-primary"
             onClick={handleSaveAndFinish}
             disabled={dfLoading || isSubmitting}
@@ -328,21 +320,13 @@ const ExtraInformation = () => {
           </button>
         )}
         {currentStep === 'details' && (
-          <>
-            <button 
-              className="btn btn-outline"
-              onClick={handleBackToChat}
-            >
-              Back to Chat
-            </button>
-            <button 
-              className="btn btn-primary"
-              onClick={handleSaveAndFinish}
-              disabled={dfLoading || isSubmitting}
-            >
-              {isSubmitting ? 'Saving...' : dfLoading ? 'Loading...' : 'Confirm Log'}
-            </button>
-          </>
+          <button 
+            className="btn btn-primary"
+            onClick={handleSaveAndFinish}
+            disabled={dfLoading || isSubmitting}
+          >
+            {isSubmitting ? 'Saving...' : dfLoading ? 'Loading...' : 'Confirm Log'}
+          </button>
         )}
       </footer>
     </div>
