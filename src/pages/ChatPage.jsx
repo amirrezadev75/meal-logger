@@ -17,7 +17,7 @@ const ChatPage = () => {
       }}>
         <Chat />
       </div>
-      <BottomNav />
+      {/* <BottomNav /> */}
     </div>
   );
 };

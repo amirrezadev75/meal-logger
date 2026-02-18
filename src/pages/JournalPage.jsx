@@ -131,7 +131,7 @@ const JournalPage = () => {
   };
 
   return (
-    <div className="mobile-container">
+    <div className="journal-page mobile-container">
       {/* Header */}
       <header className="header">
         <h1>Journal</h1>

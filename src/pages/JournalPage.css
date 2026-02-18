@@ -1,5 +1,5 @@
-/* Journal Page Styles */
-.mobile-container{
+/* Journal Page Styles - Make styles specific to journal page only */
+.journal-page .mobile-container{
   overflow: scroll;
   padding-bottom: 80px; /* Add space for fixed navigation */
 }

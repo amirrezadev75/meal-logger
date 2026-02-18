@@ -6,6 +6,7 @@ import SavedFoodModal from './SavedFoodModal';
 import RecentFoodModal from './RecentFoodModal';
 import { foundry } from '../../utils/aiFoundryLibrary';
 import prompts from '../../config/prompts.json';
+import useReloadProtection from '../../hooks/useReloadProtection';
 import './Chat.css';
 
 const Chat = () => {
@@ -79,6 +80,9 @@ const Chat = () => {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  // Protect against page reload
+  useReloadProtection();
 
   // Initialize Speech Recognition
   useEffect(() => {
@@ -482,7 +486,7 @@ const Chat = () => {
     const lastAiMessage = messages.filter(msg => msg.type === 'bot').pop();
     
     
-    // Navigate to extra information page
+    // Navigate to extra information page (this is intended navigation, no protection needed)
     navigate('/extra-information', { 
       state: { 
         selectedDate, 
@@ -560,15 +564,15 @@ const Chat = () => {
             <div className="confirm-buttons">
               <button 
                 className="btn btn-outline"
-                onClick={() => handleConfirmLog(false)}
-              >
-                Confirm Log
-              </button>
-              <button 
-                className="btn btn-primary"
                 onClick={() => handleConfirmLog(true)}
               >
                 Confirm Log and Save Meal
+              </button>
+              <button 
+                className="btn btn-primary"
+                onClick={() => handleConfirmLog(false)}
+              >
+                Confirm Log
               </button>
             </div>
           )}

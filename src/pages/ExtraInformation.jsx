@@ -6,6 +6,7 @@ import { saveMealData, getDataItem, updateDataItem, createDataItem, saveFoodItem
 import { foundry } from '../utils/aiFoundryLibrary';
 import prompts from '../config/prompts.json';
 import { useParticipant } from '../contexts/ParticipantContext';
+import useReloadProtection from '../hooks/useReloadProtection';
 
 const ExtraInformation = () => {
   const location = useLocation();
@@ -28,6 +29,9 @@ const ExtraInformation = () => {
   const apiKey = import.meta.env.VITE_AI_FOUNDRY_API_KEY;
 
   const questions = questionsConfig.questions;
+
+  // Protect against page reload
+  useReloadProtection();
 
   // Set dfLoading to false when participant is loaded
   useEffect(() => {
