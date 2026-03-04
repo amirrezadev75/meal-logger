@@ -26,9 +26,10 @@ This is a mobile-first web application that helps users log their meals with the
 
 ### Installation
 
-1. **Clone the repository**
+1. **Fork and clone the repository**
    ```bash
-   git clone https://github.com/amirrezadev75/meal-logger.git
+   # Fork the repository on GitHub first, then clone your fork
+   git clone https://github.com/YOUR-USERNAME/meal-logger.git
    ```
 
 2. **Install dependencies**
