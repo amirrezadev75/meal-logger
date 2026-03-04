@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { Modal, Button, Row, Col, Card, Form, InputGroup, Badge } from 'react-bootstrap';
 import { BsSearch, BsClock, BsBookmark, BsX } from 'react-icons/bs';
 import { useNavigate } from 'react-router-dom';
 import { getDataItem } from '../../utils/dataFoundationApi';
@@ -9,7 +8,7 @@ import './RecentFoodModal.css';
 const RecentFoodModal = ({ show, onHide, onFoodSelect, mealType }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [recentFoods, setRecentFoods] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const { participantId } = useParticipant();
   const navigate = useNavigate();
 
@@ -21,7 +20,7 @@ const RecentFoodModal = ({ show, onHide, onFoodSelect, mealType }) => {
   }, [show, mealType, participantId]);
 
   const fetchRecentFoods = async () => {
-    setLoading(true);
+    setIsLoading(true);
     try {
       const data = await getDataItem(participantId);
       
@@ -41,13 +40,9 @@ const RecentFoodModal = ({ show, onHide, onFoodSelect, mealType }) => {
               if (mealData && mealData.food) {
                 // If mealType is specified, filter by meal type, otherwise include all
                 if (!mealType || meal.toLowerCase() === mealType.toLowerCase()) {
-                  // Truncate food text to first 50 words
-                  const words = mealData.food.split(' ');
-                  const truncatedFood = words.length > 50 ? words.slice(0, 50).join(' ') + '...' : mealData.food;
-                  
                   recentFoodItems.push({
                     id: `${date}-${meal}`,
-                    name: truncatedFood,
+                    name: mealData.food, // Show full food content like SavedFoodModal
                     description: `From ${meal} on ${new Date(date).toLocaleDateString('en-GB')}`,
                     fullFood: mealData.food, // Keep full text for selection
                     date: date,
@@ -71,7 +66,7 @@ const RecentFoodModal = ({ show, onHide, onFoodSelect, mealType }) => {
       console.error('Error fetching recent foods:', error);
       setRecentFoods([]);
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
@@ -81,12 +76,11 @@ const RecentFoodModal = ({ show, onHide, onFoodSelect, mealType }) => {
   );
 
   const handleFoodClick = (food) => {
-    // Pass the food object with full text for selection
-    const foodForSelection = {
-      ...food,
-      name: food.fullFood || food.name // Use full food text if available
-    };
-    onFoodSelect(foodForSelection);
+    // Simply pass the food object with the original food content (like SavedFoodModal)
+    onFoodSelect({
+      name: food.fullFood || food.name, // Use full food text if available
+      mealType: food.mealType
+    });
   };
 
   const handleSaveFood = (food, e) => {
@@ -96,15 +90,7 @@ const RecentFoodModal = ({ show, onHide, onFoodSelect, mealType }) => {
     // You could show a toast notification here
   };
 
-  const getMealBadgeColor = (meal) => {
-    switch (meal.toLowerCase()) {
-      case 'breakfast': return 'warning';
-      case 'lunch': return 'success';
-      case 'dinner': return 'info';
-      case 'snack': return 'secondary';
-      default: return 'light';
-    }
-  };
+
 
   return (
     <>
@@ -117,9 +103,9 @@ const RecentFoodModal = ({ show, onHide, onFoodSelect, mealType }) => {
                 <h1 className="d-flex align-items-center gap-2">
                   <BsClock color="#88b083" /> Recent Foods
                 </h1>
-                <Button variant="outline-secondary" onClick={onHide} className="close-btn">
+                <button onClick={onHide} className="close-btn">
                   <BsX size={24} />
-                </Button>
+                </button>
               </div>
             </header>
 
@@ -128,7 +114,7 @@ const RecentFoodModal = ({ show, onHide, onFoodSelect, mealType }) => {
 
               {/* Food List */}
               <div className="food-list">
-                {loading ? (
+                {isLoading ? (
                   <div className="empty-state">
                     <BsClock size={48} className="empty-icon" />
                     <p className="empty-title">Loading recent foods...</p>
@@ -159,7 +145,7 @@ const RecentFoodModal = ({ show, onHide, onFoodSelect, mealType }) => {
                 )}
               </div>
 
-              {!loading && filteredFoods.length === 0 && (
+              {!isLoading && filteredFoods.length === 0 && (
                 <div className="empty-state">
                   <BsClock size={48} className="empty-icon" />
                   <p className="empty-title">No recent foods found</p>
